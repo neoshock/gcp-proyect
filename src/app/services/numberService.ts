@@ -84,6 +84,7 @@ export const getUserTickets = async (email: string): Promise<TicketPurchase[]> =
       .select(`
         id,
         raffle_id,
+        is_winner,
         number,
         payment_status,
         purchased_at,
@@ -107,15 +108,14 @@ export const getUserTickets = async (email: string): Promise<TicketPurchase[]> =
         purchaseGroups[key] = {
           id: entry.id, // Usamos el primer ID como referencia
           email,
-          amount: 0,
-          price: 1,
+          isWinner: entry.is_winner,
           numbers: [],
           paymentStatus: entry.payment_status,
           purchaseDate: entry.purchased_at
         };
       }
 
-      purchaseGroups[key].amount += 1;
+
       purchaseGroups[key].numbers.push(entry.number);
     });
 

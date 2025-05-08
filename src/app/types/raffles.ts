@@ -3,7 +3,7 @@ export interface Raffle {
     title: string;
     description: string;
     price: number;
-    totalNumbers: number;
+    total_numbers: number;
     drawDate: string;
     isActive: boolean;
 }

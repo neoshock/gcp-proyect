@@ -15,8 +15,7 @@ export interface BlessedNumber {
 export interface TicketPurchase {
     id: string;
     email: string;
-    amount: number;
-    price: number;
+    isWinner?: boolean;
     numbers: number[];
     paymentStatus: 'pending' | 'completed' | 'failed';
     purchaseDate: string;

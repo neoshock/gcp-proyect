@@ -1,5 +1,5 @@
 'use client';
-import {  BlessedNumber } from '../types/tickets';
+import { BlessedNumber } from '../types/tickets';
 
 interface BlessedNumbersSectionProps {
   blessedNumbers: BlessedNumber[];
@@ -20,17 +20,28 @@ export function BlessedNumbersSection({ blessedNumbers }: BlessedNumbersSectionP
           <div
             key={number.id}
             className={`
-              w-16 h-16 flex items-center justify-center rounded-lg border-2 
-              ${number.claimed
+            w-16 h-16 flex items-center justify-center rounded-lg border-2 transition shadow-md
+            ${number.claimed
                 ? 'border-gray-300 bg-gray-100 opacity-60'
-                : 'border-green-500 bg-green-50 hover:bg-green-100 cursor-pointer transition shadow-sm hover:shadow'}
-            `}
-            onClick={() => {}}
+                : `
+                bg-gradient-to-tr from-[#d4d4d4] via-[#f0f0f0] to-[#c0c0c0]
+                border-[#a0a0a0]
+                hover:from-[#f5f5f5] hover:to-white
+                cursor-pointer
+              `}
+          `}
+            onClick={() => {
+
+            }}
           >
-            <span className={`text-xl font-bold ${number.claimed ? 'line-through text-gray-500' : 'text-green-600'}`}>
-              {number.value.toString().padStart(4, '0')}
+            <span className={`
+            text-xl font-bold
+            ${number.claimed ? 'line-through text-gray-400' : 'text-gray-700 drop-shadow-sm'}
+          `}>
+              {number.value.toString().padStart(5, '0')}
             </span>
           </div>
+
         ))}
       </div>
 

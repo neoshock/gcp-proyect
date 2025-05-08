@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
+import styles from './styles.module.css'
 
 // Importamos nuestros servicios y tipos
 import { getBlessedNumbers, getSoldTicketsCount, getUserTickets } from "./services/numberService";
@@ -55,6 +56,8 @@ export default function Home() {
   const [ticketPurchases, setTicketPurchases] = useState<TicketPurchase[]>([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [animatedPercentage, setAnimatedPercentage] = useState(0);
+
 
   const baseAmounts = [10, 15, 20, 30, 50, 100];
 
@@ -66,8 +69,39 @@ export default function Home() {
     : [];
 
 
-  const soldPercentage = raffle ? Math.min((soldTickets / raffle.totalNumbers) * 100, 100) : 0;
+  const soldPercentage = raffle && raffle.total_numbers > 0
+    ? Math.min((soldTickets / raffle.total_numbers) * 100, 100)
+    : 0;
   const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && soldPercentage > 0) {
+      const startValue = animatedPercentage;
+      const endValue = soldPercentage;
+      const duration = 1500;
+      const startTime = Date.now();
+
+      const animateProgressBar = () => {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+
+        if (elapsed < duration) {
+          const progress = elapsed / duration;
+          const easedProgress = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2; // easeInOutQuad
+
+          const newValue = startValue + (endValue - startValue) * easedProgress;
+          setAnimatedPercentage(newValue);
+          requestAnimationFrame(animateProgressBar);
+        } else {
+          setAnimatedPercentage(endValue);
+        }
+      };
+
+      requestAnimationFrame(animateProgressBar);
+    }
+  }, [loading, soldPercentage]);
 
   useEffect(() => {
     const loadData = async () => {
@@ -77,6 +111,10 @@ export default function Home() {
         const raffle = await getActiveRaffle();
         const blessedData = await getBlessedNumbers(raffle.id);
         const soldCount = await getSoldTicketsCount(raffle.id);
+
+        console.log("Rifa cargada:", raffle);
+        console.log("Total de números:", raffle.totalNumbers);
+        console.log("Boletos vendidos:", soldCount);
 
         setBlessedNumbers(blessedData);
         setSoldTickets(soldCount);
@@ -210,17 +248,39 @@ export default function Home() {
         </section>
 
         {/* Barra de progreso */}
-        <section className="w-full mb-8">
-          <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+        <section className="w-full mb-10">
+          <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+            <div>Progreso de la venta</div>
+            <div>{Math.round(soldPercentage)}%</div>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-8 overflow-hidden shadow-inner">
             <div
-              className="bg-green-500 h-full text-xs text-white text-center leading-6"
-              style={{ width: `${soldPercentage}%` }}
+              className="bg-gradient-to-r from-green-400 to-green-600 h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out"
+              style={{
+                width: `${Math.max(animatedPercentage, 0.5)}%`,  // Mínimo 0.5% para que siempre sea visible
+                boxShadow: '0 2px 4px rgba(0, 150, 0, 0.3)'
+              }}
             >
-              {Math.floor(soldTickets)} / {raffle?.totalNumbers ?? 0} boletos vendidos
             </div>
           </div>
-        </section>
 
+          {/* Estadísticas adicionales */}
+          <div className="flex justify-between mt-2 text-sm text-gray-600">
+            <div>Boletos vendidos: <span className="font-semibold">{Math.floor(soldTickets).toLocaleString()}</span></div>
+            <div>Restantes: <span className="font-semibold">
+              {raffle ? Math.max(raffle.total_numbers - soldTickets, 0).toLocaleString() : 0}
+            </span></div>
+          </div>
+
+          {/* Valores de depuración durante desarrollo */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-gray-500 mt-1">
+              Debug: Vendidos: {soldTickets}, Total: {raffle?.total_numbers},
+              Porcentaje real: {soldPercentage.toFixed(2)}%,
+              Animado: {animatedPercentage.toFixed(2)}%
+            </div>
+          )}
+        </section>
         {/* Información adicional */}
         <section className="w-full mb-8 text-gray-800">
           <p className="mb-4 text-center font-medium">
