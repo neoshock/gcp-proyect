@@ -18,7 +18,7 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: NextRequest) {
     let rawBody: Buffer;
-    let sig: string | null = req.headers.get('stripe-signature');
+    const sig: string | null = req.headers.get('stripe-signature');
 
     if (!sig) {
         return new NextResponse('Missing Stripe signature', { status: 400 });

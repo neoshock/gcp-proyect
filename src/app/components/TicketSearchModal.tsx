@@ -1,7 +1,6 @@
 import React from 'react';
-import { BlessedNumber, TicketOption, TicketPurchase } from "../types/tickets";
+import { TicketPurchase } from "../types/tickets";
 
-// Simple Modal component for displaying ticket search results
 export function TicketSearchModal({ isOpen, onClose, tickets }: {
     isOpen: boolean,
     onClose: () => void,
@@ -9,7 +8,6 @@ export function TicketSearchModal({ isOpen, onClose, tickets }: {
 }) {
     if (!isOpen) return null;
 
-    // Flatten all numbers from all purchases
     const allNumbers = tickets.flatMap(purchase => purchase.numbers);
 
     return (

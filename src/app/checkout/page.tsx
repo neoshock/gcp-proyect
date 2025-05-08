@@ -2,9 +2,9 @@
 import { useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
-import Image from 'next/image';
+import { Suspense } from 'react';
 
-export default function CheckoutPage() {
+function CheckoutPageContent() {
     const params = useSearchParams();
     const amount = Number(params.get('amount')) || 10;
     const price = Number(params.get('price')) || 10;
@@ -22,7 +22,7 @@ export default function CheckoutPage() {
     });
 
     const [method, setMethod] = useState<'stripe' | 'transfer' | null>(null);
-    const [orderNumber, setOrderNumber] = useState<string>(`ORD-${Math.floor(Math.random() * 10000)}`);
+    const [orderNumber] = useState<string>(`ORD-${Math.floor(Math.random() * 10000)}`);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -350,5 +350,13 @@ export default function CheckoutPage() {
                 </div>
             </div>
         </>
+    );
+}
+
+export default function CheckoutPage() {
+    return (
+        <Suspense fallback={<div>Cargando checkout...</div>}>
+            <CheckoutPageContent />
+        </Suspense>
     );
 }

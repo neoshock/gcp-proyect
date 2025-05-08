@@ -1,15 +1,12 @@
-// components/BlessedNumbersSection.tsx
 'use client';
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { TicketOption, BlessedNumber } from '../types/tickets';
+import {  BlessedNumber } from '../types/tickets';
 
 interface BlessedNumbersSectionProps {
   blessedNumbers: BlessedNumber[];
   onNumberClaimed?: (number: BlessedNumber) => void;
 }
 
-export function BlessedNumbersSection({ blessedNumbers, onNumberClaimed }: BlessedNumbersSectionProps) {
+export function BlessedNumbersSection({ blessedNumbers }: BlessedNumbersSectionProps) {
 
   return (
     <section className="w-full my-8 px-4">
