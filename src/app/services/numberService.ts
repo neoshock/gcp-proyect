@@ -64,8 +64,12 @@ export const isNumberAvailable = async (number: number): Promise<boolean> => {
  * @param email Email del usuario
  * @returns Lista de compras del usuario
  */
+
+const PAGE_SIZE = 1000;
+
 export const getUserTickets = async (email: string): Promise<TicketPurchase[]> => {
   try {
+    
     const { data: participant, error: participantError } = await supabase
       .from('participants')
       .select('id')
@@ -78,45 +82,56 @@ export const getUserTickets = async (email: string): Promise<TicketPurchase[]> =
     }
 
     const participantId = participant.id;
+    let from = 0;
+    let to = PAGE_SIZE - 1;
+    let allEntries: any[] = [];
 
-    const { data, error } = await supabase
-      .from('raffle_entries')
-      .select(`
-        id,
-        raffle_id,
-        is_winner,
-        number,
-        payment_status,
-        purchased_at,
-        raffle:raffle_id (price)
-      `)
-      .eq('participant_id', participantId)
-      .order('purchased_at', { ascending: false });
+    while (true) {
+      const { data, error, count } = await supabase
+        .from('raffle_entries')
+        .select(`
+          id,
+          raffle_id,
+          is_winner,
+          number,
+          payment_status,
+          purchased_at
+        `, { count: 'exact' }) // opcional, útil si quieres saber total
+        .eq('participant_id', participantId)
+        .range(from, to)
+        .order('purchased_at', { ascending: false });
 
-    if (error) {
-      console.error('Error fetching user tickets:', error);
-      throw new Error(error.message);
+      if (error) {
+        console.error('Error fetching raffle entries:', error);
+        throw new Error(error.message);
+      }
+
+      allEntries = allEntries.concat(data);
+
+      if (data.length < PAGE_SIZE) break; // ya se trajeron todos
+      from += PAGE_SIZE;
+      to += PAGE_SIZE;
     }
 
-    // Agrupar entradas por raffle_id y payment_status
     const purchaseGroups: { [key: string]: TicketPurchase } = {};
 
-    data.forEach(entry => {
+    allEntries.forEach(entry => {
       const key = `${entry.raffle_id}_${entry.payment_status}_${entry.purchased_at.split('T')[0]}`;
 
       if (!purchaseGroups[key]) {
         purchaseGroups[key] = {
-          id: entry.id, // Usamos el primer ID como referencia
+          id: entry.id,
           email,
-          isWinner: entry.is_winner,
           numbers: [],
           paymentStatus: entry.payment_status,
           purchaseDate: entry.purchased_at
         };
       }
 
-
-      purchaseGroups[key].numbers.push(entry.number);
+      purchaseGroups[key].numbers.push({
+        number: entry.number,
+        isWinner: entry.is_winner === true
+      });
     });
 
     return Object.values(purchaseGroups);

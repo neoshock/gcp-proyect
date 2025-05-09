@@ -12,11 +12,15 @@ export interface BlessedNumber {
     updatedAt?: string;
 }
 
+export interface TicketNumber {
+    number: string;
+    isWinner: boolean;
+}
+
 export interface TicketPurchase {
     id: string;
     email: string;
-    isWinner?: boolean;
-    numbers: number[];
+    numbers: TicketNumber[];
     paymentStatus: 'pending' | 'completed' | 'failed';
     purchaseDate: string;
 }
