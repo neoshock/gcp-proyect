@@ -8,6 +8,9 @@ const supabase = createClient(
 );
 
 function generateUniqueFiveDigitNumbers(count: number, max: number, exclude: number[]): number[] {
+    console.log('Generando números únicos de 5 dígitos...');
+    console.log('Cantidad solicitada:', count);
+    console.log('Máximo permitido:', max);
     const MIN = 10000;
     const MAX = Math.min(max, 99999);
 
@@ -39,12 +42,31 @@ function generateUniqueFiveDigitNumbers(count: number, max: number, exclude: num
         }
     }
 
+    console.log('Total de números generados:', result.length);
+
     return result;
 }
 
 export async function POST(req: NextRequest) {
     try {
         const { name, email, amount, stripeSessionId } = await req.json();
+
+        // 🔐 Paso de protección: evitar duplicados por reintento del webhook
+        const { data: existingEntries, error: checkError } = await supabase
+            .from('raffle_entries')
+            .select('id')
+            .eq('stripe_session_id', stripeSessionId)
+            .limit(1);
+
+        if (checkError) {
+            console.error('Error al verificar sesión existente:', checkError);
+            return NextResponse.json({ success: false, error: 'Error interno al validar sesión' }, { status: 500 });
+        }
+
+        if (existingEntries && existingEntries.length > 0) {
+            console.warn('⚠️ Esta sesión ya ha sido procesada:', stripeSessionId);
+            return NextResponse.json({ success: true, message: 'Sesión ya procesada previamente' }, { status: 200 });
+        }
 
         // 1. Obtener la rifa activa
         const { data: activeRaffle, error: raffleError } = await supabase
@@ -134,7 +156,7 @@ export async function POST(req: NextRequest) {
             console.error('Se detectaron duplicados en los números generados');
             return NextResponse.json({ success: false, error: 'Error interno: se generaron números duplicados' }, { status: 500 });
         }
-
+        console.log('Números generados:', newNumbers.length);
         // 6. Preparar entradas para inserción
         const entriesToInsert = newNumbers.map(num => {
             const isBlessedNumber = premiumNumbers.includes(num);
