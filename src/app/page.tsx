@@ -59,7 +59,7 @@ export default function Home() {
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
 
 
-  const baseAmounts = [10, 15, 20, 30, 50, 100];
+  const baseAmounts = [20, 30, 40, 50, 75, 100];
 
   const ticketOptions: TicketOption[] = raffle
     ? baseAmounts.map((amount) => ({
@@ -142,15 +142,22 @@ export default function Home() {
   };
 
   const handleCustomBuy = async () => {
-    // validar que la cantidad sea mayor a 10$ 
     const toalPrice = customAmount ? customAmount * raffle!.price : 0;
+
     if (toalPrice < 10) {
       alert("La cantidad mínima a comprar es de 10$");
       return;
     }
-    // redirigir a la página de checkout
+
+    const remainingTickets = raffle!.total_numbers - soldTickets;
+    if (customAmount && customAmount > remainingTickets) {
+      alert(`Solo quedan ${remainingTickets} boletos disponibles`);
+      return;
+    }
+
     router.push(`/checkout?amount=${customAmount}&price=${toalPrice}`);
   };
+
 
   // Función para buscar tickets por correo
   const handleSearchTickets = async (e?: React.FormEvent) => {
@@ -192,7 +199,12 @@ export default function Home() {
         {/* Título destacado */}
         <section className="text-center mt-6 mb-4 px-4">
           <h2 className="text-2xl sm:text-3xl font-bold leading-snug">
-            {`Se parte del Proyecto Colorado y por ${raffle?.price ?? 1} dólar\nGana $10,000 en premios...`}
+            {`Sé parte del Proyecto Colorado y por ${raffle?.price
+              ? raffle.price < 1
+                ? `${Math.round(raffle.price * 100)} ctv`
+                : `${raffle.price} ${raffle.price === 1 ? 'dólar' : 'dólares'}`
+              : '1 dólar'
+              }\nGana $10,000 en premios...`}
           </h2>
 
         </section>
