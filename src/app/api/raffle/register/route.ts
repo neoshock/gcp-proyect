@@ -8,17 +8,18 @@ const supabase = createClient(
 );
 
 function generateUniqueFiveDigitNumbers(count: number, max: number, exclude: number[]): number[] {
-    console.log('Generando números únicos de 5 dígitos...');
-    console.log('Cantidad solicitada:', count);
-    console.log('Máximo permitido:', max);
     const MIN = 10000;
     const MAX = Math.min(max, 99999);
 
-    if (MAX < MIN) throw new Error(`El valor máximo debe ser al menos ${MIN} para cumplir los 5 dígitos`);
+    if (MAX < MIN) throw new Error(`El valor máximo debe ser al menos ${MIN}`);
 
     const excludeSet = new Set(exclude.filter(n => n >= MIN && n <= MAX));
+    const totalAvailable = MAX - MIN + 1 - excludeSet.size;
 
-    // Generar el conjunto de candidatos válidos
+    if (totalAvailable < count) {
+        throw new Error(`No hay suficientes números disponibles. Solicitados: ${count}, Disponibles: ${totalAvailable}`);
+    }
+
     const available: number[] = [];
     for (let i = MIN; i <= MAX; i++) {
         if (!excludeSet.has(i)) {
@@ -26,26 +27,15 @@ function generateUniqueFiveDigitNumbers(count: number, max: number, exclude: num
         }
     }
 
-    if (available.length < count) {
-        throw new Error(`No hay suficientes números únicos de 5 dígitos disponibles. Solicitados: ${count}, Disponibles: ${available.length}`);
+    for (let i = available.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [available[i], available[j]] = [available[j], available[i]];
     }
 
-    // Mezclar y seleccionar aleatoriamente
-    const result: number[] = [];
-    const usedIndexes = new Set<number>();
-
-    while (result.length < count) {
-        const index = Math.floor(Math.random() * available.length);
-        if (!usedIndexes.has(index)) {
-            result.push(available[index]);
-            usedIndexes.add(index);
-        }
-    }
-
-    console.log('Total de números generados:', result.length);
-
-    return result;
+    return available.slice(0, count);
 }
+
+
 
 export async function POST(req: NextRequest) {
     try {
@@ -172,20 +162,34 @@ export async function POST(req: NextRequest) {
             };
         });
 
-        // 7. Insertar entradas en la base de datos - usando upsert con onConflict para evitar errores duplicados
-        const { error: entriesError } = await supabase
+        const { data: insertedEntries, error: insertError } = await supabase
             .from('raffle_entries')
-            .upsert(entriesToInsert, {
-                onConflict: 'raffle_id,number',
-                ignoreDuplicates: true
-            });
+            .insert(entriesToInsert)
+            .select('id');
 
-        if (entriesError) {
-            console.error('Error al insertar entradas:', entriesError);
+        if (insertError) {
+            console.error('Error al insertar entradas:', insertError);
             return NextResponse.json({
                 success: false,
                 error: 'Error al registrar los números',
-                details: entriesError.message
+                details: insertError.message
+            }, { status: 500 });
+        }
+
+        if (!insertedEntries || insertedEntries.length !== requestedAmount) {
+            console.error(`Solo se insertaron ${insertedEntries?.length} de ${requestedAmount} números`);
+            return NextResponse.json({
+                success: false,
+                error: 'Error: no se insertaron todos los números esperados',
+            }, { status: 500 });
+        }
+
+
+        if (insertError) {
+            console.error('Error al insertar entradas:', insertError);
+            return NextResponse.json({
+                success: false,
+                error: 'Error al registrar los números',
             }, { status: 500 });
         }
 
