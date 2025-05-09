@@ -17,6 +17,7 @@ function TicketCard({ option }: { option: TicketOption }) {
   const router = useRouter();
 
   const handleClick = () => {
+    
     router.push(`/checkout?amount=${option.amount}&price=${option.price}`);
   };
 
@@ -112,10 +113,6 @@ export default function Home() {
         const blessedData = await getBlessedNumbers(raffle.id);
         const soldCount = await getSoldTicketsCount(raffle.id);
 
-        console.log("Rifa cargada:", raffle);
-        console.log("Total de números:", raffle.totalNumbers);
-        console.log("Boletos vendidos:", soldCount);
-
         setBlessedNumbers(blessedData);
         setSoldTickets(soldCount);
         setRaffle(raffle);
@@ -143,6 +140,11 @@ export default function Home() {
 
   const handleCustomBuy = async () => {
     const toalPrice = customAmount ? customAmount * raffle!.price : 0;
+
+    if (customAmount && customAmount > 10000) {
+      alert("La cantidad máxima a comprar es de 10,000 números");
+      return;
+    }
 
     if (toalPrice < 10) {
       alert("La cantidad mínima a comprar es de 10$");
