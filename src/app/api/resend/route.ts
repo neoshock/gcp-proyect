@@ -6,16 +6,17 @@ import type { Invoice } from '../../types/invoices';
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req: NextRequest) {
- 
-  console.log('Webhook Resend');
-  
-  let invoice: Invoice;
+
+  let rawBody: any;
   try {
-    invoice = await req.json();
+    rawBody = await req.json();
   } catch (error) {
     return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
   }
-  console.log('Invoice:', invoice);
+  const invoice: Invoice = rawBody.record;
+
+  console.log('Invoice data:', invoice);
+  
   if (invoice.status !== 'completed') {
     return NextResponse.json(
       { message: 'Factura no enviada (estado no success)' },
@@ -63,7 +64,7 @@ function generateInvoiceHtml(invoice: Invoice): string {
 export async function GET() {
   try {
     const { error } = await resend.emails.send({
-      from: 'Facturación Rifa <team@proyectocolorado.com>', 
+      from: 'Facturación Rifa <team@proyectocolorado.com>',
       to: 'pideun@gmail.com',
       subject: 'Correo de prueba desde Resend',
       html: '<h1>Hello World</h1><p>Este es un correo de prueba enviado desde el endpoint GET.</p>',
