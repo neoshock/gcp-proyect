@@ -10,15 +10,8 @@ type InvoiceWithStatus = Invoice & {
 };
 
 export async function POST(req: NextRequest) {
-  // // Validar webhook secret si está configurado
-  // if (webhookSecret) {
-  //   const incomingSecret = req.headers.get('x-webhook-secret');
-  //   if (incomingSecret !== webhookSecret) {
-  //     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  //   }
-  // }
+ 
   console.log('Webhook Resend');
-  console.log('Headers:', req.headers);
   
   let invoice: InvoiceWithStatus;
   try {
@@ -36,7 +29,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { error } = await resend.emails.send({
-      from: 'Facturación Rifa <facturacion@tudominio.com>',
+      from: 'Facturación Rifa <team@proyectocolorado.com>',
       to: invoice.email,
       subject: `Factura emitida - Orden #${invoice.order_number}`,
       html: generateInvoiceHtml(invoice),
@@ -69,4 +62,25 @@ function generateInvoiceHtml(invoice: Invoice): string {
       <p style="margin-top: 30px;">Gracias por tu compra.</p>
     </div>
   `;
+}
+
+export async function GET() {
+  try {
+    const { error } = await resend.emails.send({
+      from: 'Facturación Rifa <team@proyectocolorado.com>', 
+      to: 'pideun@gmail.com',
+      subject: 'Correo de prueba desde Resend',
+      html: '<h1>Hello World</h1><p>Este es un correo de prueba enviado desde el endpoint GET.</p>',
+    });
+
+    if (error) {
+      console.error('Resend error:', error);
+      return NextResponse.json({ message: 'Error al enviar correo' }, { status: 500 });
+    }
+
+    return NextResponse.json({ message: 'Correo de prueba enviado con éxito' }, { status: 200 });
+  } catch (err) {
+    console.error('Error inesperado:', err);
+    return NextResponse.json({ message: 'Error interno del servidor' }, { status: 500 });
+  }
 }
