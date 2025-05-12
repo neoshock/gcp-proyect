@@ -12,20 +12,25 @@ import { TicketSearchModal } from "./components/TicketSearchModal";
 import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
 
-
-function TicketCard({ option }: { option: TicketOption }) {
+function TicketCard({ option, bestSeller = false }: { option: TicketOption, bestSeller?: boolean }) {
   const router = useRouter();
 
   const handleClick = () => {
-    
     router.push(`/checkout?amount=${option.amount}&price=${option.price}`);
   };
 
   return (
     <div
-      className="bg-gray-100 border rounded-2xl p-6 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center"
+      className="relative bg-gray-100 border rounded-2xl p-6 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center"
       onClick={handleClick}
     >
+      {/* Cinta "Más vendido" */}
+      {bestSeller && (
+        <div className="absolute -top-3 -left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-tr-lg rounded-bl-lg shadow-md z-10">
+          MÁS VENDIDO
+        </div>
+      )}
+
       <h3 className="text-xl font-bold tracking-wide mb-2">x{option.amount} NÚMEROS</h3>
       <p className="text-2xl font-bold mb-4">${option.price}</p>
       <button
@@ -40,8 +45,6 @@ function TicketCard({ option }: { option: TicketOption }) {
     </div>
   );
 }
-
-
 
 export default function Home() {
   const [soldTickets, setSoldTickets] = useState(350);
@@ -199,21 +202,21 @@ export default function Home() {
       <main className="flex flex-col items-center p-4 max-w-4xl mx-auto">
 
         {/* Título destacado */}
-        <section className="text-center mt-6 mb-4 px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold leading-snug">
-            {`Sé parte del Proyecto Colorado y por ${raffle?.price
+        <section className="text-center mb-4 px-4">
+          <h2 className="text-2xl sm:text-4xl font-bold leading-snug">
+            {`Sé Parte del Proyecto Colorado y Por ${raffle?.price
               ? raffle.price < 1
-                ? `${Math.round(raffle.price * 100)} ctv`
-                : `${raffle.price} ${raffle.price === 1 ? 'dólar' : 'dólares'}`
+                ? `${Math.round(raffle.price * 100)} Ctv`
+                : `${raffle.price} ${raffle.price === 1 ? 'Dólar' : 'Dólares'}`
               : '1 dólar'
-              }\nGana $10,000 en premios...`}
+              }\nGana Hasta $20,000 en Premios...`}
           </h2>
 
         </section>
 
         {/* Imagen del premio */}
         <div className="w-full mb-6">
-          <div className="w-full mb-6">
+          <div className="w-full ">
             <Image
               src="/images/portada.png"
               alt="Premio"
@@ -225,9 +228,51 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Descripción */}
+        <section className="text-center">
+          <h2 className="text-xl font-semibold mb-2"><strong>Sorteo de una moto deportiva 0km</strong></h2>
+          <p>Participa comprando uno o más boletos. <strong>¡Mientras más compres, más chances tienes!</strong></p>
+        </section>
+
+        {/* Barra de progreso */}
+        <section className="w-full mb-5">
+          <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
+            <div>Progreso de la venta</div>
+            <div>{Math.round(soldPercentage)}%</div>
+          </div>
+          <div className="w-full bg-gray-100 rounded-full h-8 overflow-hidden shadow-inner">
+            <div
+              className="bg-gradient-to-r from-green-400 to-green-600 h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out"
+              style={{
+                width: `${Math.max(animatedPercentage, 0.5)}%`,  // Mínimo 0.5% para que siempre sea visible
+                boxShadow: '0 2px 4px rgba(0, 150, 0, 0.3)'
+              }}
+            >
+            </div>
+          </div>
+          <div className="text-xs mt-1">
+            <p className="mb-4 text-center ">
+              Cuando la barra llegue al 100% daremos por finalizado y procederemos a realizar el sorteo entre todos los participantes.
+              Se tomarán los 5 números de la primera y segunda suerte del programa <strong>LOTERIA NACIONAL</strong>.
+            </p>
+          </div>
+
+
+          {/* Valores de depuración durante desarrollo */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-xs text-gray-500 mt-1">
+              Debug: Vendidos: {soldTickets}, Total: {raffle?.total_numbers},
+              Porcentaje real: {soldPercentage.toFixed(2)}%,
+              Animado: {animatedPercentage.toFixed(2)}%
+            </div>
+          )}
+        </section>
+
+
+
         {/* Sección de números bendecidos */}
         {loading ? (
-          <div className="w-full text-center py-8">
+          <div className="w-full text-center">
             <div className="animate-pulse flex flex-col items-center">
               <div className="h-6 bg-gray-200 rounded w-64 mb-4"></div>
               <div className="h-4 bg-gray-200 rounded w-80 mb-6"></div>
@@ -239,7 +284,7 @@ export default function Home() {
             </div>
           </div>
         ) : error ? (
-          <div className="w-full text-center py-8 text-red-500">
+          <div className="w-full text-center text-red-500">
             <p>{error}</p>
             <button
               className="mt-4 px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition"
@@ -255,56 +300,28 @@ export default function Home() {
           />
         )}
 
-        {/* Descripción */}
-        <section className="text-center mb-6">
-          <h2 className="text-xl font-semibold mb-2">{raffle?.description ?? "Participa por el sorteo"}</h2>
-          <p className="text-gray-600">Participa comprando uno o más boletos. ¡Mientras más compres, más chances tienes!</p>
-        </section>
+        {/* Numeros ganadores 50 numeros de 50$ */}
 
-        {/* Barra de progreso */}
-        <section className="w-full mb-10">
-          <div className="flex justify-between text-sm font-medium text-gray-700 mb-1">
-            <div>Progreso de la venta</div>
-            <div>{Math.round(soldPercentage)}%</div>
-          </div>
-          <div className="w-full bg-gray-100 rounded-full h-8 overflow-hidden shadow-inner">
-            <div
-              className="bg-gradient-to-r from-green-400 to-green-600 h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out"
-              style={{
-                width: `${Math.max(animatedPercentage, 0.5)}%`,  // Mínimo 0.5% para que siempre sea visible
-                boxShadow: '0 2px 4px rgba(0, 150, 0, 0.3)'
-              }}
-            >
-            </div>
-          </div>
-
-          {/* Estadísticas adicionales */}
-          <div className="flex justify-between mt-2 text-sm text-gray-600">
-            <div>Boletos vendidos: <span className="font-semibold">{Math.floor(soldTickets).toLocaleString()}</span></div>
-            <div>Restantes: <span className="font-semibold">
-              {raffle ? Math.max(raffle.total_numbers - soldTickets, 0).toLocaleString() : 0}
-            </span></div>
-          </div>
-
-          {/* Valores de depuración durante desarrollo */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="text-xs text-gray-500 mt-1">
-              Debug: Vendidos: {soldTickets}, Total: {raffle?.total_numbers},
-              Porcentaje real: {soldPercentage.toFixed(2)}%,
-              Animado: {animatedPercentage.toFixed(2)}%
-            </div>
-          )}
-        </section>
-        {/* Información adicional */}
-        <section className="w-full mb-8 text-gray-800">
-          <p className="mb-4 text-center font-medium">
-            Cuando la barra llegue al 100% daremos por finalizado y procederemos a realizar el sorteo entre todos los participantes.
-            Se tomarán los 5 números de la primera y segunda suerte del programa <strong>LOTERIA NACIONAL</strong>.
+        <section className="w-full my-3 px-4">
+          <h2 className="text-2xl sm:text-4xl font-semibold italic mb-2 text-center">
+            100 Nuevos Números Bendecidos
+          </h2>
+          <p className="text-center mb-6">
+            Gana 50$ si te toca un número bendecido <strong>!Estos son los 100 números ganadores de la semana!</strong>
           </p>
 
+          <div className="flex flex-wrap justify-center gap-4">
+
+          </div>
+
+        </section>
+
+
+        {/* Información adicional */}
+        <section className="w-full mb-8 text-gray-800">
           <h3 className="text-xl font-semibold mb-2 text-center">¿Cómo puedo hacer para participar?</h3>
           <p className="mb-2">Es muy sencillo, te lo explico en estos cuatro pasos ⤵️</p>
-          <ol className="list-decimal list-inside space-y-2 pl-4">
+          <ol className="list-decimal list-inside space-y-2 pl-4 text-xs marker:font-bold">
             <li>
               Selecciona el paquete de números que desees, es súper fácil. Recuerda que mientras más números tengas,
               más oportunidades tendrás de ganar.
@@ -320,9 +337,8 @@ export default function Home() {
               Podrás revisarlos también en la parte de abajo en el apartado <strong>«Consulta tus números»</strong>.
             </li>
           </ol>
-
           <div className="mt-6 flex justify-center">
-            <button className="bg-black text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition">
+            <button className="bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition">
               🎥 Ver video tutorial
             </button>
           </div>
@@ -330,9 +346,16 @@ export default function Home() {
 
         {/* Opciones de tickets */}
         <section className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
-          {ticketOptions.map((option) => (
-            <TicketCard key={option.amount} option={option} />
-          ))}
+          {ticketOptions.map((option) => {
+            const isBestSeller = option.amount === 50;
+            return (
+              <TicketCard
+                key={option.amount}
+                option={option}
+                bestSeller={isBestSeller}
+              />
+            );
+          })}
         </section>
 
         {/* Card personalizada para ingresar cantidad */}
@@ -388,7 +411,6 @@ export default function Home() {
               <p className="text-red-500 text-sm mt-2">{searchError}</p>
             )}
           </form>
-
           <p className="text-gray-600 text-sm text-center mt-4">
             Recuerda que los números asignados son aleatorios y serán enviados a tu correo electrónico registrado.
             <br />
@@ -408,7 +430,15 @@ export default function Home() {
       {/* Footer */}
       <footer className="w-full bg-[#800000] py-4 text-center text-white">
         <p className="text-sm">© 2023 GPC. Todos los derechos reservados.</p>
-        <p className="text-sm">Consulta los términos y condiciones en nuestro sitio web.</p>
+        <p className="text-sm">
+          <a href="/privacy-policy" className="underline hover:text-gray-200">
+            Política de Privacidad
+          </a>
+          {' '}|{' '}
+          <a href="/terms-and-conditions" className="underline hover:text-gray-200">
+            Términos y Condiciones
+          </a>
+        </p>
       </footer>
 
       {/* Botón de WhatsApp */}

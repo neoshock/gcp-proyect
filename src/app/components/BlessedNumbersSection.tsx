@@ -9,10 +9,10 @@ interface BlessedNumbersSectionProps {
 export function BlessedNumbersSection({ blessedNumbers }: BlessedNumbersSectionProps) {
 
   return (
-    <section className="w-full my-8 px-4">
-      <h2 className="text-2xl font-semibold mb-4 text-center">Números Bendecidos</h2>
-      <p className="text-center mb-6">
-        Gana 200$ si te toca un número bendecido.
+    <section className="w-full px-4">
+      <h2 className="text-2xl sm:text-4xl font-semibold italic mb-2 text-center">Números Bendecidos</h2>
+      <p className="text-center ">
+        Gana 200$ si te toca un número bendecido <strong>!Estos son los 5 números ganadores de la semana!</strong>
       </p>
 
       <div className="flex flex-wrap justify-center gap-4">
@@ -20,7 +20,7 @@ export function BlessedNumbersSection({ blessedNumbers }: BlessedNumbersSectionP
           <div
             key={number.id}
             className={`
-            w-16 h-16 flex items-center justify-center rounded-lg border-2 transition shadow-md
+            w-20 h-20 flex items-center justify-center rounded-lg border-2 transition shadow-md
             ${number.claimed
                 ? 'border-gray-300 bg-gray-100 opacity-60'
                 : `

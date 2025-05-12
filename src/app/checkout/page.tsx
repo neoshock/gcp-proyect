@@ -1,13 +1,35 @@
 'use client';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Suspense } from 'react';
+import { generateOrderNumber, createInvoiceWithParticipant } from '../services/invoiceService';
+import { PaymentStatus } from '../types/invoices';
 
 function CheckoutPageContent() {
     const params = useSearchParams();
     const amount = Number(params.get('amount')) || 10;
     const price = Number(params.get('price')) || 10;
+    const [isLoading, setIsLoading] = useState(true);
+    const [orderNumber, setOrderNumber] = useState<string>('');
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isOfLegalAge, setIsOfLegalAge] = useState(false);
+
+    useEffect(() => {
+        async function fetchOrderNumber() {
+            try {
+                const number = await generateOrderNumber();
+                setOrderNumber(number);
+            } catch (error) {
+                console.error('Failed to generate order number:', error);
+                setOrderNumber(`ORD-${Math.floor(Math.random() * 10000)}`);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        fetchOrderNumber();
+    }, []);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -22,7 +44,6 @@ function CheckoutPageContent() {
     });
 
     const [method, setMethod] = useState<'stripe' | 'transfer' | null>(null);
-    const [orderNumber] = useState<string>(`ORD-${Math.floor(Math.random() * 10000)}`);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -55,30 +76,59 @@ function CheckoutPageContent() {
         }
     };
 
-    const handleTransferPayment = () => {
+    const handleTransferPayment = async () => {
         // Validate form before proceeding
         if (!validateForm()) return;
 
-        // Format the order details for WhatsApp
-        const productDetails = `Números Yamaha MT03 2025 | Actividad #1`;
-        const totalAmount = price;
+        setIsProcessing(true);
 
-        const message = encodeURIComponent(
-            `*¡Nuevo pedido de GPC!*\n\n` +
-            `Número de pedido: *${orderNumber}*\n` +
-            `Cliente: ${formData.name} ${formData.lastName}\n` +
-            `Email: ${formData.email}\n` +
-            `Teléfono: ${formData.phone}\n\n` +
-            `*DETALLES DEL PEDIDO:*\n` +
-            `Producto: ${productDetails}\n` +
-            `Cantidad: ${amount}\n` +
-            `Total: $${totalAmount.toFixed(2)}\n\n` +
-            `Voy a realizar la transferencia y enviar el comprobante. Por favor, confirmar recepción.`
-        );
+        try {
+            // Crear la factura pendiente en la base de datos
+            await createInvoiceWithParticipant({
+                orderNumber: orderNumber,
+                fullName: `${formData.name} ${formData.lastName}`,
+                email: formData.email,
+                phone: formData.phone,
+                country: formData.country,
+                status: PaymentStatus.PENDING,
+                paymentMethod: 'TRANSFER',
+                province: formData.province,
+                city: formData.city,
+                address: formData.address,
+                amount: amount,
+                totalPrice: price
+            });
 
-        // WhatsApp business number - replace with your actual number
-        const phoneNumber = '593986184679';
-        window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+            // Format the order details for WhatsApp
+            const productDetails = `Números Yamaha MT03 2025 | Actividad #1`;
+            const totalAmount = price;
+
+            const message = encodeURIComponent(
+                `*¡Nuevo pedido de GPC!*\n\n` +
+                `Número de pedido: *${orderNumber}*\n` +
+                `Cliente: ${formData.name} ${formData.lastName}\n` +
+                `Email: ${formData.email}\n` +
+                `Teléfono: ${formData.phone}\n\n` +
+                `*DETALLES DEL PEDIDO:*\n` +
+                `Producto: ${productDetails}\n` +
+                `Cantidad: ${amount}\n` +
+                `Total: $${totalAmount.toFixed(2)}\n\n` +
+                `Voy a realizar la transferencia y enviar el comprobante. Por favor, confirmar recepción.`
+            );
+
+            // WhatsApp business number
+            const phoneNumber = '593986184679';
+            window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+
+            // Opcional: Redireccionar a una página de confirmación
+            // window.location.href = `/confirmacion?order=${invoiceOrderNumber}`;
+
+        } catch (error) {
+            console.error('Error al crear factura para transferencia:', error);
+            alert('Hubo un error al procesar tu pedido. Por favor, intenta de nuevo.');
+        } finally {
+            setIsProcessing(false);
+        }
     };
 
     const validateForm = () => {
@@ -90,6 +140,11 @@ function CheckoutPageContent() {
 
         if (formData.email !== formData.confirmEmail) {
             alert('Los correos electrónicos no coinciden');
+            return false;
+        }
+
+        if (!isOfLegalAge) {
+            alert('Debes confirmar que eres mayor de 18 años para continuar.');
             return false;
         }
 
@@ -304,6 +359,20 @@ function CheckoutPageContent() {
                                     </div>
                                 </label>
                             </div>
+
+                            <div className="mt-4 flex items-start space-x-2 mx-1">
+                                <input
+                                    id="legal-age"
+                                    type="checkbox"
+                                    checked={isOfLegalAge}
+                                    onChange={(e) => setIsOfLegalAge(e.target.checked)}
+                                    className="mt-1"
+                                />
+                                <label htmlFor="legal-age" className="text-sm text-gray-700">
+                                    Confirmo que soy mayor de 18 años y acepto los términos de participación.
+                                </label>
+                            </div>
+
 
                             {method === 'transfer' && (
                                 <div className="mt-4 bg-gray-50 p-4 rounded-md border border-gray-200">
