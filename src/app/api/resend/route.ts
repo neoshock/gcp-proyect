@@ -1,24 +1,25 @@
-// src/app/api/webhook/resend/route.ts
+// src/app/api/resend/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import type { Invoice } from '../../types/invoices'; 
+import type { Invoice } from '../../types/invoices';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const webhookSecret = process.env.SUPABASE_WEBHOOK_SECRET;
 
 type InvoiceWithStatus = Invoice & {
   status: string;
 };
 
 export async function POST(req: NextRequest) {
-  // Validar webhook secret si está configurado
-  if (webhookSecret) {
-    const incomingSecret = req.headers.get('x-webhook-secret');
-    if (incomingSecret !== webhookSecret) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-  }
-
+  // // Validar webhook secret si está configurado
+  // if (webhookSecret) {
+  //   const incomingSecret = req.headers.get('x-webhook-secret');
+  //   if (incomingSecret !== webhookSecret) {
+  //     return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+  //   }
+  // }
+  console.log('Webhook Resend');
+  console.log('Headers:', req.headers);
+  
   let invoice: InvoiceWithStatus;
   try {
     invoice = await req.json();
@@ -26,7 +27,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
   }
 
-  if (invoice.status !== 'success') {
+  if (invoice.status !== 'completed') {
     return NextResponse.json(
       { message: 'Factura no enviada (estado no success)' },
       { status: 200 }
