@@ -21,7 +21,7 @@ function TicketCard({ option, bestSeller = false }: { option: TicketOption, best
 
   return (
     <div
-      className="relative bg-gray-100 border rounded-2xl p-6 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center"
+      className="relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center"
       onClick={handleClick}
     >
       {/* Cinta "Más vendido" */}
@@ -196,14 +196,20 @@ export default function Home() {
   return (
     <>
       {/* Header */}
-      <header className="w-full bg-[#800000] py-4 text-center">
-        <h1 className="text-white text-7xl font-extrabold tracking-wide">GPC</h1>
+      <header className="w-full bg-[#800000] text-center">
+        <Image
+          src="/images/logo-secondary.png"
+          alt="Logo"
+          width={1200}
+          height={300}
+          className="mx-auto mb-2"
+        />
       </header>
       <main className="flex flex-col items-center p-4 max-w-4xl mx-auto">
 
         {/* Título destacado */}
         <section className="text-center mb-4 px-4">
-          <h2 className="text-2xl sm:text-4xl font-bold leading-snug">
+          <h2 className="text-2xl sm:text-4xl font-bold leading-tight">
             {`Sé Parte del Proyecto Colorado y Por ${raffle?.price
               ? raffle.price < 1
                 ? `${Math.round(raffle.price * 100)} Ctv`
@@ -211,7 +217,6 @@ export default function Home() {
               : '1 dólar'
               }\nGana Hasta $20,000 en Premios...`}
           </h2>
-
         </section>
 
         {/* Imagen del premio */}
@@ -229,7 +234,7 @@ export default function Home() {
         </div>
 
         {/* Descripción */}
-        <section className="text-center">
+        <section className="text-center mb-6">
           <h2 className="text-xl font-semibold mb-2"><strong>Sorteo de una moto deportiva 0km</strong></h2>
           <p>Participa comprando uno o más boletos. <strong>¡Mientras más compres, más chances tienes!</strong></p>
         </section>

@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { Resend } from 'resend';
-import type { Invoice } from '../types/invoices';
+import type { Invoice } from '../../types/invoices';
 
 // Inicializa Resend con tu API Key
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -9,14 +9,11 @@ type InvoiceWithStatus = Invoice & {
   status: string;
 };
 
-export default async function handler(
+export async function POST(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
-
+  
   // Valida tu webhook secret opcionalmente
   if (
     process.env.SUPABASE_WEBHOOK_SECRET &&
