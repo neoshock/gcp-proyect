@@ -5,21 +5,17 @@ import type { Invoice } from '../../types/invoices';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-type InvoiceWithStatus = Invoice & {
-  status: string;
-};
-
 export async function POST(req: NextRequest) {
  
   console.log('Webhook Resend');
   
-  let invoice: InvoiceWithStatus;
+  let invoice: Invoice;
   try {
     invoice = await req.json();
   } catch (error) {
     return NextResponse.json({ message: 'Invalid JSON body' }, { status: 400 });
   }
-
+  console.log('Invoice:', invoice);
   if (invoice.status !== 'completed') {
     return NextResponse.json(
       { message: 'Factura no enviada (estado no success)' },
