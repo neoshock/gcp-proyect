@@ -249,30 +249,16 @@ export const deleteInvoice = async (invoiceId: string): Promise<boolean> => {
 };
 
 /**
- * Genera un número de orden secuencial para la factura
+ * Genera un número de orden secuencial para la factura usando RPC de Supabase
  * @returns Número de orden para la nueva factura
  */
 export const generateOrderNumber = async (): Promise<string> => {
-    try {
-        const { count, error } = await supabase
-            .from('invoices')
-            .select('*', { count: 'exact', head: true });
+    const { data, error } = await supabase.rpc('generate_order_number');
 
-        if (error) {
-            console.error('Error counting invoices:', error);
-            throw new Error(error.message);
-        }
-
-        // Formato: INV-YYYYMMDD-XXXX
-        const today = new Date();
-        const dateStr = today.getFullYear().toString() +
-            (today.getMonth() + 1).toString().padStart(2, '0') +
-            today.getDate().toString().padStart(2, '0');
-        const nextNumber = ((count || 0) + 1).toString().padStart(4, '0');
-
-        return `INV-${dateStr}-${nextNumber}`;
-    } catch (error) {
-        console.error('Error in generateOrderNumber:', error);
+    if (error) {
+        console.error('Error generating order number:', error);
         throw error;
     }
+
+    return data as string;
 };
