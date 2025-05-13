@@ -64,10 +64,10 @@ function generateInvoiceHtml(invoice: Invoice): string {
       <!-- Body -->
       <div style="padding: 20px;">
         <!-- Title and Barcode in Two Columns -->
-        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2 style="margin: 0; color: #800000; font-size: 24px;">Factura emitida</h2>
           <div style="text-align: right;">
-            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 90px; height: auto;" />
+            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 120px; height: auto;" />
           </div>
         </div>
 
