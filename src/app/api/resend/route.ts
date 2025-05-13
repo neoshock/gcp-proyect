@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const { error } = await resend.emails.send({
-      from: 'Facturación Rifa <team@proyectocolorado.com>',
+      from: 'Facturación Rifa <noreply@proyectocolorado.com>',
       to: invoice.email,
       subject: `Factura emitida - Orden #${invoice.order_number}`,
       html: generateInvoiceHtml(invoice),
