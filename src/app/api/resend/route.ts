@@ -50,7 +50,7 @@ function generateInvoiceHtml(invoice: Invoice): string {
   )}&scale=2&includetext`;
 
   return `
-    <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 0;">
+    <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 0; width: 100%;">
       <!-- Header -->
       <div style="background-color: #800000; color: white; padding: 15px; text-align: center;">
         <img src="https://www.proyectocolorado.com/_next/image?url=%2Fimages%2Flogo-secondary.png&w=3840&q=75" alt="Logo" style="max-width: 450px;" />
@@ -75,27 +75,32 @@ function generateInvoiceHtml(invoice: Invoice): string {
           <strong style="color: #800000;">${invoice.order_number}</strong> ha sido generada.
         </p>
 
-        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-          <!-- Billing Info -->
-          <table style="width: 65%; font-size: 14px;">
-            <tr>
-              <td style="padding: 8px 0; width: 40%;"><strong>Total:</strong></td>
-              <td style="padding: 8px 0;">$${invoice.total_price.toFixed(2)}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;"><strong>Método de pago:</strong></td>
-              <td style="padding: 8px 0;">${invoice.payment_method}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0;"><strong>Fecha:</strong></td>
-              <td style="padding: 8px 0;">${new Date(invoice.created_at).toLocaleDateString()}</td>
-            </tr>
-            <tr>
-              <td style="padding: 8px 0; vertical-align: top;"><strong>Dirección:</strong></td>
-              <td style="padding: 8px 0;">${invoice.address}, ${invoice.city}, ${invoice.province}, ${invoice.country}</td>
-            </tr>
-          </table>
-        </div>
+        <!-- Billing Info and Placeholder Column (if needed) -->
+        <table width="100%" style="margin-top: 30px; font-size: 14px;">
+          <tr>
+            <td style="width: 65%; vertical-align: top;">
+              <table width="100%">
+                <tr>
+                  <td style="padding: 8px 0; width: 40%;"><strong>Total:</strong></td>
+                  <td style="padding: 8px 0;">$${invoice.total_price.toFixed(2)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Método de pago:</strong></td>
+                  <td style="padding: 8px 0;">${invoice.payment_method}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0;"><strong>Fecha:</strong></td>
+                  <td style="padding: 8px 0;">${new Date(invoice.created_at).toLocaleDateString()}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; vertical-align: top;"><strong>Dirección:</strong></td>
+                  <td style="padding: 8px 0;">${invoice.address}, ${invoice.city}, ${invoice.province}, ${invoice.country}</td>
+                </tr>
+              </table>
+            </td>
+            <td style="width: 35%;"></td> <!-- empty column just to push the content apart if needed -->
+          </tr>
+        </table>
 
         <p style="margin-top: 30px;">Gracias por tu compra.</p>
       </div>
