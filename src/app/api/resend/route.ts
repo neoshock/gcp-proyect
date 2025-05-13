@@ -47,54 +47,63 @@ export async function POST(req: NextRequest) {
 function generateInvoiceHtml(invoice: Invoice): string {
   const barcodeUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(
     invoice.order_number
-  )}&scale=3&includetext`;
+  )}&scale=2&includetext`;
+  
+  // Smaller QR code (using a hypothetical QR service or you can replace with your actual QR generation)
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+    invoice.order_number
+  )}`;
 
   return `
-    <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 20px;">
+    <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 0;">
       <!-- Header -->
-      <div style="text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 20px;">
-        <img src="https://www.proyectocolorado.com/_next/image?url=%2Fimages%2Flogo-secondary.png&w=3840&q=75" alt="Logo" style="max-width: 200px;" />
+      <div style="background-color: #800000; color: white; padding: 15px; text-align: center;">
+        <img src="https://www.proyectocolorado.com/_next/image?url=%2Fimages%2Flogo-secondary.png&w=3840&q=75" alt="Logo" style="max-width: 180px;" />
       </div>
 
       <!-- Body -->
-      <h2 style="margin-top: 30px;">Factura emitida</h2>
-      <p>Hola <strong>${invoice.full_name}</strong>,</p>
-      <p>Tu factura con número de orden 
-        <strong style="color: #8B0000;">${invoice.order_number}</strong> ha sido generada.
-      </p>
-
-      <!-- Two Columns: Details + Barcode -->
-      <div style="display: flex; justify-content: space-between; margin-top: 30px;">
-        <!-- Billing Info -->
-        <table style="width: 60%; font-size: 14px;">
-          <tr>
-            <td style="padding: 6px 0;"><strong>Total:</strong></td>
-            <td>$${invoice.total_price.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0;"><strong>Método de pago:</strong></td>
-            <td>${invoice.payment_method}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0;"><strong>Fecha:</strong></td>
-            <td>${new Date(invoice.created_at).toLocaleDateString()}</td>
-          </tr>
-          <tr>
-            <td style="padding: 6px 0; vertical-align: top;"><strong>Dirección:</strong></td>
-            <td>${invoice.address}, ${invoice.city}, ${invoice.province}, ${invoice.country}</td>
-          </tr>
-        </table>
-
-        <!-- Barcode -->
-        <div style="width: 35%; text-align: right;">
-          <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 100%; height: auto;" />
+      <div style="padding: 20px;">
+        <!-- Title and Barcode in Two Columns -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+          <h2 style="margin: 0; color: #800000; font-size: 24px;">Factura emitida</h2>
+          <div style="text-align: right;">
+            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 200px; height: auto;" />
+          </div>
         </div>
+
+        <p>Hola <strong>${invoice.full_name}</strong>,</p>
+        <p>Tu factura con número de orden 
+          <strong style="color: #800000;">${invoice.order_number}</strong> ha sido generada.
+        </p>
+
+        <!-- Two Columns: Details + QR Code -->
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+          <!-- Billing Info -->
+          <table style="width: 65%; font-size: 14px;">
+            <tr>
+              <td style="padding: 8px 0; width: 40%;"><strong>Total:</strong></td>
+              <td style="padding: 8px 0;">$${invoice.total_price.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0;"><strong>Método de pago:</strong></td>
+              <td style="padding: 8px 0;">${invoice.payment_method}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0;"><strong>Fecha:</strong></td>
+              <td style="padding: 8px 0;">${new Date(invoice.created_at).toLocaleDateString()}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; vertical-align: top;"><strong>Dirección:</strong></td>
+              <td style="padding: 8px 0;">${invoice.address}, ${invoice.city}, ${invoice.province}, ${invoice.country}</td>
+            </tr>
+          </table>
+        </div>
+
+        <p style="margin-top: 30px;">Gracias por tu compra.</p>
       </div>
 
-      <p style="margin-top: 30px;">Gracias por tu compra.</p>
-
       <!-- Footer -->
-      <div style="border-top: 1px solid #ccc; margin-top: 40px; padding-top: 15px; font-size: 12px; color: #666; text-align: center;">
+      <div style="background-color: #800000; color: white; padding: 15px; text-align: center; font-size: 12px;">
         Proyecto Colorado © ${new Date().getFullYear()}<br/>
         www.proyectocolorado.com | contacto@proyectocolorado.com
       </div>
