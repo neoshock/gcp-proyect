@@ -58,7 +58,7 @@ function generateInvoiceHtml(invoice: Invoice): string {
     <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 0;">
       <!-- Header -->
       <div style="background-color: #800000; color: white; padding: 15px; text-align: center;">
-        <img src="https://www.proyectocolorado.com/_next/image?url=%2Fimages%2Flogo-secondary.png&w=3840&q=75" alt="Logo" style="max-width: 180px;" />
+        <img src="https://www.proyectocolorado.com/_next/image?url=%2Fimages%2Flogo-secondary.png&w=3840&q=75" alt="Logo" style="max-width: 450px;" />
       </div>
 
       <!-- Body -->
@@ -67,7 +67,7 @@ function generateInvoiceHtml(invoice: Invoice): string {
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
           <h2 style="margin: 0; color: #800000; font-size: 24px;">Factura emitida</h2>
           <div style="text-align: right;">
-            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 200px; height: auto;" />
+            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 90px; height: auto;" />
           </div>
         </div>
 
