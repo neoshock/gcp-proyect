@@ -118,10 +118,7 @@ function CheckoutPageContent() {
 
             // WhatsApp business number
             const phoneNumber = '593986184679';
-            window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
-
-            // Opcional: Redireccionar a una página de confirmación
-            // window.location.href = `/confirmacion?order=${invoiceOrderNumber}`;
+            window.location.href = `https://wa.me/${phoneNumber}?text=${message}`;
 
         } catch (error) {
             console.error('Error al crear factura para transferencia:', error);
