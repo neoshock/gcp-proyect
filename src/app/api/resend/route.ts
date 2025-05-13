@@ -48,11 +48,6 @@ function generateInvoiceHtml(invoice: Invoice): string {
   const barcodeUrl = `https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(
     invoice.order_number
   )}&scale=2&includetext`;
-  
-  // Smaller QR code (using a hypothetical QR service or you can replace with your actual QR generation)
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
-    invoice.order_number
-  )}`;
 
   return `
     <div style="font-family: sans-serif; color: #333; max-width: 700px; margin: auto; border: 1px solid #eee; padding: 0;">
@@ -64,19 +59,22 @@ function generateInvoiceHtml(invoice: Invoice): string {
       <!-- Body -->
       <div style="padding: 20px;">
         <!-- Title and Barcode in Two Columns -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; color: #800000; font-size: 24px;">Factura emitida</h2>
-          <div style="text-align: right;">
-            <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 120px; height: auto;" />
-          </div>
-        </div>
+        <table width="100%" style="margin-bottom: 20px;">
+          <tr>
+            <td style="text-align: left;">
+              <h2 style="margin: 0; color: #800000; font-size: 24px;">Factura emitida</h2>
+            </td>
+            <td style="text-align: right;">
+              <img src="${barcodeUrl}" alt="Código de barras" style="max-width: 120px; height: auto;" />
+            </td>
+          </tr>
+        </table>
 
         <p>Hola <strong>${invoice.full_name}</strong>,</p>
         <p>Tu factura con número de orden 
           <strong style="color: #800000;">${invoice.order_number}</strong> ha sido generada.
         </p>
 
-        <!-- Two Columns: Details + QR Code -->
         <div style="display: flex; justify-content: space-between; margin-top: 30px;">
           <!-- Billing Info -->
           <table style="width: 65%; font-size: 14px;">
