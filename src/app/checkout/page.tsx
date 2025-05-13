@@ -51,31 +51,62 @@ function CheckoutPageContent() {
     };
 
     const handleStripePayment = async () => {
-        // Validate form before proceeding
         if (!validateForm()) return;
 
-        const res = await fetch('/api/create-checkout-session', {
-            method: 'POST',
-            body: JSON.stringify({
-                amount,
-                price,
-                name: `${formData.name} ${formData.lastName}`,
+        setIsProcessing(true);
+
+        try {
+            // Crear la factura pendiente en la base de datos
+            await createInvoiceWithParticipant({
+                orderNumber: orderNumber,
+                fullName: `${formData.name} ${formData.lastName}`,
                 email: formData.email,
                 phone: formData.phone,
                 country: formData.country,
+                status: PaymentStatus.PENDING,
+                paymentMethod: 'STRIPE',
                 province: formData.province,
                 city: formData.city,
-                address: formData.address
-            }),
-            headers: { 'Content-Type': 'application/json' },
-        });
-        const data = await res.json();
-        if (data.id) {
-            const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-            await stripe?.redirectToCheckout({ sessionId: data.id });
+                address: formData.address,
+                amount: amount,
+                totalPrice: price
+            });
+
+            // Crear sesión de checkout de Stripe
+            const res = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                body: JSON.stringify({
+                    orderNumber,
+                    amount,
+                    price,
+                    name: `${formData.name} ${formData.lastName}`,
+                    email: formData.email,
+                    phone: formData.phone,
+                    country: formData.country,
+                    province: formData.province,
+                    city: formData.city,
+                    address: formData.address
+                }),
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            const data = await res.json();
+
+            if (data.id) {
+                const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+                await stripe?.redirectToCheckout({ sessionId: data.id });
+            } else {
+                throw new Error('No se pudo crear la sesión de Stripe');
+            }
+
+        } catch (error) {
+            console.error('Error en el pago con Stripe:', error);
+            alert('Hubo un error al procesar tu pago. Por favor, intenta de nuevo.');
+        } finally {
+            setIsProcessing(false);
         }
     };
-
+    
     const handleTransferPayment = async () => {
         // Validate form before proceeding
         if (!validateForm()) return;
@@ -376,9 +407,9 @@ function CheckoutPageContent() {
                                     <p className="font-medium mb-2">Detalles de transferencia:</p>
                                     <p className="mb-1"><span className="font-semibold">Banco:</span> Banco Pichincha</p>
                                     <p className="mb-1"><span className="font-semibold">Tipo de cuenta:</span> Corriente</p>
-                                    <p className="mb-1"><span className="font-semibold">N° de cuenta:</span> 2100012345</p>
-                                    <p className="mb-1"><span className="font-semibold">Titular:</span> Proyecto GPC</p>
-                                    <p className="mb-1"><span className="font-semibold">RUC:</span> 0912345678001</p>
+                                    <p className="mb-1"><span className="font-semibold">N° de cuenta:</span> 2100314106</p>
+                                    <p className="mb-1"><span className="font-semibold">Titular:</span> S&S Producciones S.A</p>
+                                    <p className="mb-1"><span className="font-semibold">RUC:</span> 2390053781001</p>
 
                                     <div className="mt-4 text-gray-700">
                                         <p className="font-semibold text-red-600">IMPORTANTE:</p>

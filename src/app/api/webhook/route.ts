@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
             const metadata = session.metadata;
             console.log('Metadata:', metadata);
 
-            if (metadata && metadata.amount && metadata.email && metadata.name && metadata.phone) {
-                const { name, email, phone, amount } = metadata;
+            if (metadata?.orderNumber) {
+                const { orderNumber, name, email, phone, amount } = metadata
 
                 await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/raffle/register`, {
                     method: 'POST',
@@ -49,6 +49,15 @@ export async function POST(req: NextRequest) {
                         stripeSessionId: session.id,
                     }),
                 });
+
+                await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/invoice/complete`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        orderNumber,
+                        status: 'completed'
+                    }),
+                })
             }
         }
 

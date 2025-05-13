@@ -8,12 +8,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 });
 
 export async function POST(req: Request) {
-    const { amount, price, name, email, phone, country, province, city, address } = await req.json();
+    const { amount, price, name, email, phone, country, province, city, address, orderNumber } = await req.json();
     try {
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
             mode: 'payment',
             metadata: {
+                orderNumber,
                 name,
                 email,
                 phone,
@@ -28,7 +29,8 @@ export async function POST(req: Request) {
                     price_data: {
                         currency: 'usd',
                         product_data: {
-                            name: `Paquete de ${amount} números`,
+                            name: `Paquete de ${amount} números, Numero de orden: ${orderNumber}`,
+                            description: `Es importante que guardes el numero de orden: ${orderNumber}`,
                         },
                         unit_amount: price * 100,
                     },
