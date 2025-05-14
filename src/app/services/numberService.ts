@@ -14,6 +14,7 @@ export const getBlessedNumbers = async (
       .from('blessed_numbers')
       .select('*')
       .eq('raffle_id', raffleId)
+      .or('is_minor_prize.is.false,is_minor_prize.is.null') // solo mayores
       .order('number', { ascending: true });
 
     if (error) {
@@ -33,6 +34,7 @@ export const getBlessedNumbers = async (
     throw error;
   }
 };
+
 
 /**
  * Verifica si un número está disponible (no ha sido asignado)

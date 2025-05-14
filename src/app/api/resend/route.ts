@@ -81,6 +81,10 @@ function generateInvoiceHtml(invoice: Invoice): string {
             <td style="width: 65%; vertical-align: top;">
               <table width="100%">
                 <tr>
+                  <td style="padding: 8px 0; width: 40%;"><strong>Concepto:</strong></td>
+                  <td style="padding: 8px 0;"> Compra total de $${invoice.amount} números para la rifa</td>
+                </tr>
+                <tr>
                   <td style="padding: 8px 0; width: 40%;"><strong>Total:</strong></td>
                   <td style="padding: 8px 0;">$${invoice.total_price.toFixed(2)}</td>
                 </tr>

@@ -1,8 +1,7 @@
 'use client';
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
-import styles from './styles.module.css'
+import { useEffect, useState } from "react";
 
 // Importamos nuestros servicios y tipos
 import { getBlessedNumbers, getSoldTicketsCount, getUserTickets } from "./services/numberService";
