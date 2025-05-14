@@ -148,7 +148,7 @@ function CheckoutPageContent() {
             );
 
             // WhatsApp business number
-            const phoneNumber = '593986184679';
+            const phoneNumber = '593992319300';
             window.location.href = `https://wa.me/${phoneNumber}?text=${message}`;
 
         } catch (error) {

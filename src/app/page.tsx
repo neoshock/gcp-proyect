@@ -315,7 +315,14 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap justify-center gap-4">
-
+            <Image
+              src="/images/numeros.png"
+              alt="Premio"
+              layout="intrinsic"
+              width={800}
+              height={400}
+              className="rounded-2xl shadow-md w-full h-auto"
+            />
           </div>
 
         </section>
@@ -447,7 +454,7 @@ export default function Home() {
 
       {/* Botón de WhatsApp */}
       <a
-        href="https://wa.me/593986184679"
+        href="https://wa.me/593992319300"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-4 right-4 bg-green-500 text-white p-3 rounded-full shadow-lg hover:bg-green-600 transition"
