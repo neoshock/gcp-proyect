@@ -106,15 +106,12 @@ function CheckoutPageContent() {
             setIsProcessing(false);
         }
     };
-    
-    const handleTransferPayment = async () => {
-        // Validate form before proceeding
-        if (!validateForm()) return;
 
+    const handleTransferPayment = async () => {
+        if (!validateForm()) return;
         setIsProcessing(true);
 
         try {
-            // Crear la factura pendiente en la base de datos
             await createInvoiceWithParticipant({
                 orderNumber: orderNumber,
                 fullName: `${formData.name} ${formData.lastName}`,
@@ -130,7 +127,6 @@ function CheckoutPageContent() {
                 totalPrice: price
             });
 
-            // Format the order details for WhatsApp
             const productDetails = `Números Yamaha MT03 2025 | Actividad #1`;
             const totalAmount = price;
 
@@ -147,9 +143,14 @@ function CheckoutPageContent() {
                 `Voy a realizar la transferencia y enviar el comprobante. Por favor, confirmar recepción.`
             );
 
-            // WhatsApp business number
             const phoneNumber = '593992319300';
-            window.location.href = `https://wa.me/${phoneNumber}?text=${message}`;
+            // Abrimos WhatsApp
+            window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+
+            // Esperamos 1.5s y redirigimos a la página de confirmación
+            setTimeout(() => {
+                window.location.href = `/transfer-success?email=${formData.email}`;
+            }, 1500);
 
         } catch (error) {
             console.error('Error al crear factura para transferencia:', error);

@@ -222,7 +222,7 @@ export default function Home() {
         <div className="w-full mb-6">
           <div className="w-full ">
             <Image
-              src="/images/portada.png"
+              src="/images/Portada MT03.png"
               alt="Premio"
               layout="intrinsic"
               width={800}
