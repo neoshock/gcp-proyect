@@ -143,14 +143,11 @@ function CheckoutPageContent() {
                 `Voy a realizar la transferencia y enviar el comprobante. Por favor, confirmar recepción.`
             );
 
-            const phoneNumber = '593992319300';
-            // Abrimos WhatsApp
-            window.open(`https://wa.me/${phoneNumber}?text=${message}`, '_blank');
+            window.location.href = `/transfer-success?email=${formData.email}&name=${formData.name}&lastName=${formData.lastName}&phone=${formData.phone}&amount=${amount}&price=${price}&orderNumber=${orderNumber}`;
 
-            // Esperamos 1.5s y redirigimos a la página de confirmación
-            setTimeout(() => {
-                window.location.href = `/transfer-success?email=${formData.email}`;
-            }, 1500);
+            // // Esperamos 1.5s y redirigimos a la página de confirmación
+            // setTimeout(() => {
+            // }, 1500);
 
         } catch (error) {
             console.error('Error al crear factura para transferencia:', error);
