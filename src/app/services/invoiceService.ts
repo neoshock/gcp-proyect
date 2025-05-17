@@ -88,8 +88,7 @@ export const findOrCreateParticipant = async (email: string, name?: string): Pro
             .from('participants')
             .select('id')
             .eq('email', email)
-            .single();
-
+            .maybeSingle();
         // Si el participante existe, retornamos su ID
         if (existingParticipant) {
             return existingParticipant.id;

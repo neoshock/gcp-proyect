@@ -127,28 +127,10 @@ function CheckoutPageContent() {
                 totalPrice: price
             });
 
-            const productDetails = `Números Yamaha MT03 2025 | Actividad #1`;
-            const totalAmount = price;
-
-            const message = encodeURIComponent(
-                `*¡Nuevo pedido de GPC!*\n\n` +
-                `Número de pedido: *${orderNumber}*\n` +
-                `Cliente: ${formData.name} ${formData.lastName}\n` +
-                `Email: ${formData.email}\n` +
-                `Teléfono: ${formData.phone}\n\n` +
-                `*DETALLES DEL PEDIDO:*\n` +
-                `Producto: ${productDetails}\n` +
-                `Cantidad: ${amount}\n` +
-                `Total: $${totalAmount.toFixed(2)}\n\n` +
-                `Voy a realizar la transferencia y enviar el comprobante. Por favor, confirmar recepción.`
-            );
-
-            window.location.href = `/transfer-success?email=${formData.email}&name=${formData.name}&lastName=${formData.lastName}&phone=${formData.phone}&amount=${amount}&price=${price}&orderNumber=${orderNumber}`;
-
-            // // Esperamos 1.5s y redirigimos a la página de confirmación
-            // setTimeout(() => {
-            // }, 1500);
-
+            const timeout = setTimeout(() => {
+                window.location.href = `/transfer-success?email=${formData.email}&name=${formData.name}&lastName=${formData.lastName}&phone=${formData.phone}&amount=${amount}&price=${price}&orderNumber=${orderNumber}`;
+            }, 1000);
+            return () => clearTimeout(timeout);
         } catch (error) {
             console.error('Error al crear factura para transferencia:', error);
             alert('Hubo un error al procesar tu pedido. Por favor, intenta de nuevo.');

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { getBlessedNumbers, getSoldTicketsCount, getUserTickets } from "./services/numberService";
 import { BlessedNumber, TicketOption, TicketPurchase } from "./types/tickets";
 import { BlessedNumbersSection } from "./components/BlessedNumbersSection";
+import { VideoModal } from './components/VideoModal';
 import { TicketSearchModal } from "./components/TicketSearchModal";
 import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
@@ -60,6 +61,8 @@ export default function Home() {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
 
 
   const baseAmounts = [20, 30, 40, 50, 75, 100];
@@ -349,7 +352,8 @@ export default function Home() {
             </li>
           </ol>
           <div className="mt-6 flex justify-center">
-            <button className="bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition">
+            <button className="bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition"
+              onClick={() => setIsVideoModalOpen(true)}>
               🎥 Ver video tutorial
             </button>
           </div>
@@ -437,6 +441,7 @@ export default function Home() {
         onClose={closeModal}
         tickets={ticketPurchases}
       />
+      <VideoModal isOpen={isVideoModalOpen} onClose={() => setIsVideoModalOpen(false)} />
 
       {/* Footer */}
       <footer className="w-full bg-[#800000] py-4 text-center text-white">
