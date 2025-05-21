@@ -221,7 +221,7 @@ export default function Home() {
       <main className="flex flex-col items-center p-4 max-w-4xl mx-auto">
 
         {/* Título destacado */}
-        <section className="text-center mb-4 px-4">
+        <section className="text-center mb-4">
           <h2 className="text-2xl sm:text-4xl font-bold leading-tight">
             {`Gana un Mazda 6 Full Equipada`}
           </h2>
