@@ -11,6 +11,7 @@ import { VideoModal } from './components/VideoModal';
 import { TicketSearchModal } from "./components/TicketSearchModal";
 import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
+import ImageCarousel from "./components/ImageCarousel";
 
 function TicketCard({ option, bestSeller = false }: { option: TicketOption, bestSeller?: boolean }) {
   const router = useRouter();
@@ -62,6 +63,16 @@ export default function Home() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [animatedPercentage, setAnimatedPercentage] = useState(0);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+
+  // Definimos los valores base para los tickets
+  const imageUrls = [
+    "/images/1.png",
+    "/images/2.png",
+    "/images/3.png",
+    "/images/4.png",
+    "/images/5.png",
+    "/images/6.png",
+  ];
 
 
 
@@ -212,32 +223,25 @@ export default function Home() {
         {/* Título destacado */}
         <section className="text-center mb-4 px-4">
           <h2 className="text-2xl sm:text-4xl font-bold leading-tight">
-            {`Sé Parte del Proyecto Colorado y Por ${raffle?.price
-              ? raffle.price < 1
-                ? `${Math.round(raffle.price * 100)} Ctv`
-                : `${raffle.price} ${raffle.price === 1 ? 'Dólar' : 'Dólares'}`
-              : '1 dólar'
-              }\nGana Hasta $20,000 en Premios...`}
+            {`Gana un Mazda 6 Full Equipada`}
           </h2>
+          <p className="text-2xl sm:text-4xl font-semibold">
+            <strong>Yamaha MT 03, 2025 0KM</strong>
+          </p>
+          <p className="text-2xl sm:text-4xl font-semibold">
+            <strong>+ DE $3,000 MIL DÓLARES EN PREMIOS</strong>
+          </p>
         </section>
 
         {/* Imagen del premio */}
         <div className="w-full mb-6">
           <div className="w-full ">
-            <Image
-              src="/images/Portada MT03.png"
-              alt="Premio"
-              layout="intrinsic"
-              width={800}
-              height={400}
-              className="rounded-2xl shadow-md w-full h-auto"
-            />
+            <ImageCarousel images={imageUrls} />
           </div>
         </div>
 
         {/* Descripción */}
         <section className="text-center mb-6">
-          <h2 className="text-xl font-semibold mb-2"><strong>Sorteo de una moto deportiva 0km</strong></h2>
           <p>Participa comprando uno o más boletos. <strong>¡Mientras más compres, más chances tienes!</strong></p>
         </section>
 
@@ -306,33 +310,8 @@ export default function Home() {
             onNumberClaimed={handleNumberClaimed}
           />
         )}
-
-        {/* Numeros ganadores 50 numeros de 50$ */}
-
-        <section className="w-full my-3 px-4">
-          <h2 className="text-2xl sm:text-4xl font-semibold italic mb-2 text-center">
-            100 Nuevos Números Bendecidos
-          </h2>
-          <p className="text-center mb-6">
-            Gana 50$ si te toca un número bendecido <strong>!Estos son los 100 números ganadores de la semana!</strong>
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4">
-            <Image
-              src="/images/numeros.png"
-              alt="Premio"
-              layout="intrinsic"
-              width={800}
-              height={400}
-              className="rounded-2xl shadow-md w-full h-auto"
-            />
-          </div>
-
-        </section>
-
-
         {/* Información adicional */}
-        <section className="w-full mb-8 text-gray-800">
+        <section className="w-full mb-8 text-gray-800 mt-3">
           <h3 className="text-xl font-semibold mb-2 text-center">¿Cómo puedo hacer para participar?</h3>
           <p className="mb-2">Es muy sencillo, te lo explico en estos cuatro pasos ⤵️</p>
           <ol className="list-decimal list-inside space-y-2 pl-4 text-xs marker:font-bold">

@@ -4,15 +4,22 @@ import { useEffect, useState } from 'react';
 import { getDashboardMetrics } from '../services/metricsService';
 import DashboardMetricCard from '../components/DashboardMetricCard';
 import DashboardTables from '../components/DashboardTables';
-import { DollarSign, Hash, Trophy, Percent } from 'lucide-react';
+import { DollarSign, Hash, Trophy, PieChart } from 'lucide-react';
+import PaymentMethodGaugeMini from '../components/PaymentMethodGauge';
 
 export default function DashboardPage() {
+
     const [metrics, setMetrics] = useState<{
         totalSales: number;
         totalNumbersSold: number;
         totalWinners: number;
         conversionRate: number;
+        transferSales: number;
+        stripeSales: number;
+        transferPercentage: number;
+        stripePercentage: number;
     } | null>(null);
+
 
     useEffect(() => {
         getDashboardMetrics().then(setMetrics).catch(console.error);
@@ -39,9 +46,14 @@ export default function DashboardPage() {
                         value={metrics.totalWinners}
                     />
                     <DashboardMetricCard
-                        icon={<Percent />}
-                        title="Ratio Conversión"
-                        value={`${metrics.conversionRate * 100}%`}
+                        icon={<PieChart />}
+                        title="Método de Pago"
+                        value={
+                            <PaymentMethodGaugeMini
+                                transferPercentage={metrics.transferPercentage}
+                                stripePercentage={metrics.stripePercentage}
+                            />
+                        }
                     />
                 </div>
             ) : (

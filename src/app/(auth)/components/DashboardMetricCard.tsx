@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 interface DashboardMetricCardProps {
     icon: ReactNode;
     title: string;
-    value: string | number;
+    value: ReactNode; 
 }
 
 export default function DashboardMetricCard({ icon, title, value }: DashboardMetricCardProps) {
@@ -12,7 +12,7 @@ export default function DashboardMetricCard({ icon, title, value }: DashboardMet
             <div className="text-3xl text-maroon">{icon}</div>
             <div>
                 <h3 className="text-sm text-gray-600">{title}</h3>
-                <p className="text-xl font-semibold text-gray-900">{value}</p>
+                <div className="mt-1 text-2xl font-bold">{value}</div>
             </div>
         </div>
     );
