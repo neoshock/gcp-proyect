@@ -229,7 +229,7 @@ export default function Home() {
             <strong>Yamaha MT 03, 2025 0KM</strong>
           </p>
           <p className="text-2xl sm:text-4xl font-semibold">
-            <strong>+ DE $3,000 MIL DÓLARES EN PREMIOS</strong>
+            <strong>+ De $3,000 Mil Dólares en Premios</strong>
           </p>
         </section>
 
