@@ -318,7 +318,7 @@ function CheckoutPageContent() {
 
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <p className="font-medium">Números Yamaha MT03 2025 | Actividad #1</p>
+                                        <p className="font-medium">Números Mazda 6 Full - Yamaha MT03 2025 | Actividad #1</p>
                                         <p className="text-gray-500 text-sm">x {amount}</p>
                                     </div>
                                     <span>${(price).toFixed(2)}</span>

@@ -15,7 +15,7 @@ export default function TransferSuccessClient() {
         const price = searchParams.get('price') ?? '0';
         const orderNumber = searchParams.get('orderNumber') ?? '';
 
-        const productDetails = `Números Yamaha MT03 2025 | Actividad #1`;
+        const productDetails = `Números Mazda 6 Full - Yamaha MT03 2025 | Actividad #1`;
         const totalAmount = parseFloat(price);
 
         const message = encodeURIComponent(
