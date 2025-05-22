@@ -405,13 +405,25 @@ export default function Home() {
               <p className="text-red-500 text-sm mt-2">{searchError}</p>
             )}
           </form>
+
           <p className="text-gray-600 text-sm text-center mt-4">
             Recuerda que los números asignados son aleatorios y serán enviados a tu correo electrónico registrado.
             <br />
             Si no los encuentras, revisa tu bandeja de correo no deseado o spam.
           </p>
-        </section>
 
+          {/* Iframe del Reel de Instagram */}
+          <div className="flex justify-center mt-6">
+            <iframe
+              src="https://www.instagram.com/reel/DJ7y7eFu908/embed"
+              width="400"
+              height="480"
+              frameBorder="0"
+              allowFullScreen
+              className="rounded-lg shadow-lg"
+            ></iframe>
+          </div>
+        </section>
       </main>
 
       {/* Modal para mostrar los números */}
