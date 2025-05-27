@@ -15,14 +15,23 @@ function CheckoutPageContent() {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isOfLegalAge, setIsOfLegalAge] = useState(false);
 
+    const generateNewOrderNumber = async () => {
+        try {
+            const number = await generateOrderNumber();
+            setOrderNumber(number);
+            return number;
+        } catch (error) {
+            console.error('Failed to generate order number:', error);
+            const fallbackNumber = `ORD-${Math.floor(Math.random() * 10000)}`;
+            setOrderNumber(fallbackNumber);
+            return fallbackNumber;
+        }
+    };
+
     useEffect(() => {
         async function fetchOrderNumber() {
             try {
-                const number = await generateOrderNumber();
-                setOrderNumber(number);
-            } catch (error) {
-                console.error('Failed to generate order number:', error);
-                setOrderNumber(`ORD-${Math.floor(Math.random() * 10000)}`);
+                await generateNewOrderNumber();
             } finally {
                 setIsLoading(false);
             }
@@ -94,7 +103,13 @@ function CheckoutPageContent() {
 
             if (data.id) {
                 const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-                await stripe?.redirectToCheckout({ sessionId: data.id });
+                const result = await stripe?.redirectToCheckout({ sessionId: data.id });
+
+                // Si hay un error en la redirección, generar nuevo número de orden
+                if (result?.error) {
+                    console.error('Error en redirección de Stripe:', result.error);
+                    throw new Error(result.error.message || 'Error en la redirección');
+                }
             } else {
                 throw new Error('No se pudo crear la sesión de Stripe');
             }
@@ -102,6 +117,9 @@ function CheckoutPageContent() {
         } catch (error) {
             console.error('Error en el pago con Stripe:', error);
             alert('Hubo un error al procesar tu pago. Por favor, intenta de nuevo.');
+
+            // Generar nuevo número de orden después del error
+            await generateNewOrderNumber();
         } finally {
             setIsProcessing(false);
         }
@@ -127,13 +145,17 @@ function CheckoutPageContent() {
                 totalPrice: price
             });
 
-            const timeout = setTimeout(() => {
-                window.location.href = `/transfer-success?email=${formData.email}&name=${formData.name}&lastName=${formData.lastName}&phone=${formData.phone}&amount=${amount}&price=${price}&orderNumber=${orderNumber}`;
-            }, 1000);
-            return () => clearTimeout(timeout);
+            // Simular un pequeño delay antes de la redirección
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            window.location.href = `/transfer-success?email=${formData.email}&name=${formData.name}&lastName=${formData.lastName}&phone=${formData.phone}&amount=${amount}&price=${price}&orderNumber=${orderNumber}`;
+
         } catch (error) {
             console.error('Error al crear factura para transferencia:', error);
             alert('Hubo un error al procesar tu pedido. Por favor, intenta de nuevo.');
+
+            // Generar nuevo número de orden después del error
+            await generateNewOrderNumber();
         } finally {
             setIsProcessing(false);
         }
@@ -159,6 +181,14 @@ function CheckoutPageContent() {
         return true;
     };
 
+    // Componente de Loading
+    const LoadingSpinner = () => (
+        <div className="flex items-center justify-center">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+            <span>Procesando...</span>
+        </div>
+    );
+
     return (
         <>
             <header className="w-full bg-[#800000] py-4 text-center">
@@ -183,7 +213,8 @@ function CheckoutPageContent() {
                                     name="name"
                                     value={formData.name}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    disabled={isProcessing}
+                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                                 />
                             </div>
                             <div>
@@ -193,7 +224,8 @@ function CheckoutPageContent() {
                                     name="lastName"
                                     value={formData.lastName}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    disabled={isProcessing}
+                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                                 />
                             </div>
                         </div>
@@ -206,7 +238,8 @@ function CheckoutPageContent() {
                                 type="email"
                                 value={formData.email}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
                         </div>
 
@@ -218,7 +251,8 @@ function CheckoutPageContent() {
                                 type="email"
                                 value={formData.confirmEmail}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
                         </div>
 
@@ -229,7 +263,8 @@ function CheckoutPageContent() {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
                         </div>
 
@@ -251,7 +286,8 @@ function CheckoutPageContent() {
                                     name="province"
                                     value={formData.province}
                                     onChange={handleInputChange}
-                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                    disabled={isProcessing}
+                                    className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                                 >
                                     <option value="">Seleccione...</option>
                                     <option value="Azuay">Azuay</option>
@@ -289,7 +325,8 @@ function CheckoutPageContent() {
                                 name="city"
                                 value={formData.city}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
                         </div>
 
@@ -300,7 +337,8 @@ function CheckoutPageContent() {
                                 name="address"
                                 value={formData.address}
                                 onChange={handleInputChange}
-                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                                disabled={isProcessing}
+                                className="w-full px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-100"
                             />
                         </div>
                     </div>
@@ -331,6 +369,13 @@ function CheckoutPageContent() {
                                     <span>${(price).toFixed(2)}</span>
                                 </div>
                             </div>
+
+                            {/* Mostrar número de orden */}
+                            <div className="mt-4 p-3 bg-gray-50 rounded-md">
+                                <p className="text-sm text-gray-600">
+                                    <span className="font-semibold">Número de pedido:</span> {orderNumber}
+                                </p>
+                            </div>
                         </div>
 
                         <div className="bg-white p-6 rounded-md shadow border">
@@ -344,6 +389,7 @@ function CheckoutPageContent() {
                                         value="stripe"
                                         checked={method === 'stripe'}
                                         onChange={() => setMethod('stripe')}
+                                        disabled={isProcessing}
                                         className="h-5 w-5 text-green-600"
                                     />
                                     <div>
@@ -359,6 +405,7 @@ function CheckoutPageContent() {
                                         value="transfer"
                                         checked={method === 'transfer'}
                                         onChange={() => setMethod('transfer')}
+                                        disabled={isProcessing}
                                         className="h-5 w-5 text-green-600"
                                     />
                                     <div>
@@ -374,13 +421,13 @@ function CheckoutPageContent() {
                                     type="checkbox"
                                     checked={isOfLegalAge}
                                     onChange={(e) => setIsOfLegalAge(e.target.checked)}
+                                    disabled={isProcessing}
                                     className="mt-1"
                                 />
                                 <label htmlFor="legal-age" className="text-sm text-gray-700">
                                     Confirmo que soy mayor de 18 años y acepto los términos de participación.
                                 </label>
                             </div>
-
 
                             {method === 'transfer' && (
                                 <div className="mt-4 bg-gray-50 p-4 rounded-md border border-gray-200">
@@ -404,21 +451,29 @@ function CheckoutPageContent() {
                                 {method === 'stripe' && (
                                     <button
                                         onClick={handleStripePayment}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-md font-semibold transition"
+                                        disabled={isProcessing}
+                                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-md font-semibold transition"
                                     >
-                                        Pagar con tarjeta
+                                        {isProcessing ? <LoadingSpinner /> : 'Pagar con tarjeta'}
                                     </button>
                                 )}
 
                                 {method === 'transfer' && (
                                     <button
                                         onClick={handleTransferPayment}
-                                        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-md font-semibold transition flex items-center justify-center gap-2"
+                                        disabled={isProcessing}
+                                        className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white py-3 rounded-md font-semibold transition flex items-center justify-center gap-2"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                                        </svg>
-                                        Contactar por WhatsApp
+                                        {isProcessing ? (
+                                            <LoadingSpinner />
+                                        ) : (
+                                            <>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                                                </svg>
+                                                Contactar por WhatsApp
+                                            </>
+                                        )}
                                     </button>
                                 )}
                             </div>
