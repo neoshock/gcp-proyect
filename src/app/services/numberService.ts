@@ -71,12 +71,16 @@ const PAGE_SIZE = 1000;
 
 export const getUserTickets = async (email: string): Promise<TicketPurchase[]> => {
   try {
-    
+
     const { data: participant, error: participantError } = await supabase
       .from('participants')
       .select('id')
-      .eq('email', email.toLowerCase())
-      .single();
+      .ilike('email', email)
+      .maybeSingle();
+
+    if (!participant) {
+      throw new Error('Participant not found');
+    }
 
     if (participantError) {
       console.error('Error fetching participant:', participantError);
