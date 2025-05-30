@@ -75,7 +75,6 @@ function generateInvoiceHtml(invoice: Invoice): string {
           <strong style="color: #800000;">${invoice.order_number}</strong> ha sido generada.
         </p>
 
-        <!-- Billing Info and Placeholder Column (if needed) -->
         <table width="100%" style="margin-top: 30px; font-size: 14px;">
           <tr>
             <td style="width: 65%; vertical-align: top;">
@@ -102,11 +101,19 @@ function generateInvoiceHtml(invoice: Invoice): string {
                 </tr>
               </table>
             </td>
-            <td style="width: 35%;"></td> <!-- empty column just to push the content apart if needed -->
+            <td style="width: 35%;"></td>
           </tr>
         </table>
 
         <p style="margin-top: 30px;">Gracias por tu compra.</p>
+
+        <!-- Botón "Ver mis números" -->
+        <div style="margin-top: 30px; text-align: center;">
+          <a href="https://www.proyectocolorado.com/success?email=${encodeURIComponent(invoice.email)}" 
+             style="display: inline-block; background-color: #800000; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: bold;">
+            Ver mis números
+          </a>
+        </div>
       </div>
 
       <!-- Footer -->
