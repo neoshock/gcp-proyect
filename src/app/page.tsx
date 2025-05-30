@@ -13,7 +13,9 @@ import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
 import ImageCarousel from "./components/ImageCarousel";
 
-function TicketCard({ option, bestSeller = false }: { option: TicketOption, bestSeller?: boolean }) {
+const MARKETING_BOOST_PERCENTAGE = 1;
+
+function TicketCard({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -22,7 +24,8 @@ function TicketCard({ option, bestSeller = false }: { option: TicketOption, best
 
   return (
     <div
-      className="relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center"
+      className={`relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center ${limitedOffer ? 'border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-yellow-50' : ''
+        }`}
       onClick={handleClick}
     >
       {/* Cinta "Más vendido" */}
@@ -32,10 +35,32 @@ function TicketCard({ option, bestSeller = false }: { option: TicketOption, best
         </div>
       )}
 
-      <h3 className="text-xl font-bold tracking-wide mb-2">x{option.amount} NÚMEROS</h3>
-      <p className="text-2xl font-bold mb-4">${option.price}</p>
+      {/* Cinta "Oferta Limitada" */}
+      {limitedOffer && (
+        <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-tl-lg rounded-br-lg shadow-md z-10 animate-pulse">
+          OFERTA LIMITADA
+        </div>
+      )}
+
+      <h3 className={`text-xl font-bold tracking-wide mb-2 ${limitedOffer ? 'text-orange-700' : ''}`}>
+        x{option.amount} NÚMEROS
+      </h3>
+
+      {limitedOffer && (
+        <div className="mb-2">
+          <div className="text-xs text-orange-600 font-semibold">¡SÚPER DESCUENTO!</div>
+        </div>
+      )}
+
+      <p className={`text-2xl font-bold mb-4 ${limitedOffer ? 'text-orange-600' : ''}`}>
+        ${option.price}
+      </p>
+
       <button
-        className="bg-black text-white text-sm font-semibold px-4 py-2 rounded hover:bg-gray-800"
+        className={`text-sm font-semibold px-4 py-2 rounded transition ${limitedOffer
+          ? 'bg-orange-500 text-white hover:bg-orange-600'
+          : 'bg-black text-white hover:bg-gray-800'
+          }`}
         onClick={(e) => {
           e.stopPropagation();
           handleClick();
@@ -85,9 +110,14 @@ export default function Home() {
     }))
     : [];
 
+  const limitedOfferOption: TicketOption = {
+    amount: 10,
+    price: 5
+  };
+
 
   const soldPercentage = raffle && raffle.total_numbers > 0
-    ? Math.min((soldTickets / raffle.total_numbers) * 100, 100)
+    ? Math.min(((soldTickets / raffle.total_numbers) * 100) + MARKETING_BOOST_PERCENTAGE, 100)
     : 0;
   const router = useRouter();
 
@@ -255,7 +285,7 @@ export default function Home() {
             <div
               className="bg-gradient-to-r from-green-400 to-green-600 h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out"
               style={{
-                width: `${Math.max(animatedPercentage, 0.5)}%`,  // Mínimo 0.5% para que siempre sea visible
+                width: `${Math.max(animatedPercentage, 0.5)}%`,
                 boxShadow: '0 2px 4px rgba(0, 150, 0, 0.3)'
               }}
             >
@@ -337,6 +367,18 @@ export default function Home() {
             </button>
           </div>
         </section>
+
+        {/* Ticket de Oferta Limitada - Destacado */}
+        {/* <section className="w-full mb-6">
+          <div className="flex justify-center">
+            <div className="w-full max-w-sm">
+              <TicketCard
+                option={limitedOfferOption}
+                limitedOffer={true}
+              />
+            </div>
+          </div>
+        </section> */}
 
         {/* Opciones de tickets */}
         <section className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">

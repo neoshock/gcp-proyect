@@ -1,5 +1,6 @@
-import { SetStateAction, useState } from 'react';
-import { Pencil, Trash, Eye, Plus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SetStateAction, useEffect, useRef, useState } from 'react';
+
+import { Pencil, Trash, Eye, Plus, ChevronLeft, ChevronRight, MoreVertical } from 'lucide-react';
 
 function cn(...classes: string[]) {
     return classes.filter(Boolean).join(' ');
@@ -75,6 +76,61 @@ interface DataTableProps {
         onDelete?: (item: any) => void;
         onCreate?: () => void;
     };
+    customActions?: (row: any) => CustomAction[];
+}
+
+interface CustomAction {
+    label: string;
+    onClick: (item: any) => void;
+    confirm?: boolean;
+}
+
+interface MenuProps {
+    row: any;
+    customActions?: (row: any) => CustomAction[];
+}
+
+function Menu({ row, customActions }: MenuProps) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const items = customActions?.(row) ?? [];
+
+    return (
+        <div className="relative overflow-visible" ref={ref}>
+            <button onClick={() => setOpen((prev) => !prev)} className="p-1 hover:bg-gray-100 rounded">
+                <MoreVertical className="w-4 h-4" />
+            </button>
+            {open && (
+                <div className="absolute right-0 mt-2 w-44 bg-white border shadow-lg rounded-md z-50">
+                    {items.map((action, index) => (
+                        <button
+                            key={index}
+                            onClick={() => {
+                                setOpen(false);
+                                if (!action.confirm || confirm(`¿${action.label}?`)) {
+                                    action.onClick(row);
+                                }
+                            }}
+                            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                        >
+                            {action.label}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
 }
 
 export default function DataTable({
@@ -82,6 +138,7 @@ export default function DataTable({
     data,
     columns,
     actions = {},
+    customActions,
     onAction,
     filterable = false,
     searchable = false,
@@ -156,11 +213,25 @@ export default function DataTable({
                     <thead>
                         <tr className="border-b">
                             {columns.map((col) => (
-                                <th key={col.key} className="py-2 text-left capitalize">
+                                <th
+                                    key={col.key}
+                                    className={cn(
+                                        "py-2 px-3 text-left capitalize text-sm font-semibold whitespace-nowrap overflow-hidden text-ellipsis",
+                                        col.key === 'telefono' ? 'min-w-[120px] max-w-[140px]' : '',
+                                        col.key === 'nombre' ? 'min-w-[160px] max-w-[180px]' : '',
+                                        col.key === 'orden' ? 'min-w-[180px] max-w-[200px]' : '',
+                                        col.key === 'cantidad' || col.key === 'total' ? 'text-right min-w-[60px]' : ''
+                                    )}
+                                    title={col.label}
+                                >
                                     {col.label}
                                 </th>
                             ))}
-                            {(actions.read || actions.edit || actions.delete) && <th>Acciones</th>}
+                            {(actions.read || actions.edit || actions.delete) && (
+                                <th className="py-2 px-3 text-left capitalize text-sm font-semibold whitespace-nowrap">
+                                    Acciones
+                                </th>
+                            )}
                         </tr>
                     </thead>
                     <tbody>
@@ -177,23 +248,29 @@ export default function DataTable({
                             currentData.map((row, i) => (
                                 <tr key={i} className="border-b hover:bg-gray-50">
                                     {columns.map((col) => (
-                                        <td key={col.key} className="py-2">
+                                        <td
+                                            key={col.key}
+                                            className={cn(
+                                                "py-2 px-3 text-sm",
+                                                col.key === 'telefono' ? 'min-w-[120px] max-w-[140px] truncate overflow-hidden text-ellipsis' : '',
+                                                col.key === 'nombre' ? 'min-w-[160px] max-w-[180px] truncate overflow-hidden text-ellipsis' : '',
+                                                col.key === 'orden' ? 'min-w-[180px] max-w-[200px] truncate overflow-hidden text-ellipsis' : '',
+                                                col.key === 'cantidad' || col.key === 'total' ? 'text-right min-w-[60px] font-mono' : '',
+                                                'whitespace-nowrap'
+                                            )}
+                                        >
                                             {col.isStatus ? (
-                                                <span
-                                                    className={cn(
-                                                        'px-2 py-1 rounded-full text-xs font-medium',
-                                                        statusColor(row[col.key])
-                                                    )}
-                                                >
+                                                <span className={cn(
+                                                    'px-2 py-1 rounded-full text-xs font-medium',
+                                                    statusColor(row[col.key])
+                                                )}>
                                                     {row[col.key]}
                                                 </span>
                                             ) : col.isBoolean || typeof row[col.key] === 'boolean' ? (
-                                                <span
-                                                    className={cn(
-                                                        'px-2 py-1 rounded-full text-xs font-medium',
-                                                        booleanColor(row[col.key])
-                                                    )}
-                                                >
+                                                <span className={cn(
+                                                    'px-2 py-1 rounded-full text-xs font-medium',
+                                                    booleanColor(row[col.key])
+                                                )}>
                                                     {row[col.key] ? 'Sí' : 'No'}
                                                 </span>
                                             ) : col.key === 'purchased_at' ? (
@@ -203,23 +280,11 @@ export default function DataTable({
                                             )}
                                         </td>
                                     ))}
-                                    {actions.read || actions.edit || actions.delete ? (
-                                        <td className="py-2">
-                                            {actions.read && (
-                                                <Button variant="ghost" size="sm" onClick={() => onAction?.onRead?.(row)}>
-                                                    <Eye className="w-4 h-4" />
-                                                </Button>
-                                            )}
-                                            {actions.edit && (
-                                                <Button variant="ghost" size="sm" onClick={() => onAction?.onEdit?.(row)}>
-                                                    <Pencil className="w-4 h-4" />
-                                                </Button>
-                                            )}
-                                            {actions.delete && (
-                                                <Button variant="ghost" size="sm" onClick={() => onAction?.onDelete?.(row)}>
-                                                    <Trash className="w-4 h-4" />
-                                                </Button>
-                                            )}
+                                    {(actions.read || actions.edit || actions.delete || customActions) ? (
+                                        <td className="py-2 px-3">
+                                            <div className="relative">
+                                                <Menu row={row} customActions={customActions} />
+                                            </div>
                                         </td>
                                     ) : null}
                                 </tr>

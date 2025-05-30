@@ -8,7 +8,6 @@ import { getRaffleEntries } from '../services/rafflesService';
 import DataTable from './DataTable';
 import RaffleEntryModal from './RaffleEntryModal';
 
-
 export default function DashboardTables() {
     const [invoices, setInvoices] = useState<any[]>([]);
     const [blessed, setBlessed] = useState<any[]>([]);
@@ -37,7 +36,7 @@ export default function DashboardTables() {
 
     useEffect(() => {
         fetchData();
-        
+
     }, []);
 
     return (
@@ -62,15 +61,22 @@ export default function DashboardTables() {
                 {/* Tabla de Bendecidos */}
                 <DataTable
                     title="Números Bendecidos"
-                    data={blessed} 
+                    data={blessed}
                     columns={[
                         { key: 'number', label: 'Número' },
-                        { key: 'name', label: 'Participante' }, 
-                        { key: 'email', label: 'Email' }, 
-                        { key: 'is_minor_prize', label: 'Premio Menor'}, 
+                        { key: 'name', label: 'Participante' },
+                        { key: 'email', label: 'Email' },
+                        { key: 'is_minor_prize', label: 'Premio Menor' },
                     ]}
                     actions={{ read: false, edit: false, delete: false }}
                     searchable
+                    customActions={(row) => [
+                        {
+                            label: 'Dar por recibido',
+                            onClick: () => console.log('Detalles de', row),
+                            confirm: true,
+                        },
+                    ]}
                 />
 
 
