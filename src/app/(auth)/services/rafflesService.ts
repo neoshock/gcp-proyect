@@ -98,8 +98,16 @@ export async function createNewRaffleEntriesFromOrder(orderNumber: string, quant
       in_amount: quantity,
     });
 
-    if (generateError || !generated || generated.length !== quantity) {
-      throw new Error('Error al generar los números');
+    if (generateError) {
+      throw new Error(`Error en RPC: ${generateError.message}`);
+    }
+
+    if (!generated || generated.length === 0) {
+      throw new Error('No se generaron números');
+    }
+
+    if (quantity <= 1000 && generated.length !== quantity) {
+      throw new Error(`Se generaron ${generated.length} en lugar de ${quantity}`);
     }
 
     // 9. Actualizar la orden como completada
