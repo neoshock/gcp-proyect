@@ -13,7 +13,7 @@ import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
 import ImageCarousel from "./components/ImageCarousel";
 
-const MARKETING_BOOST_PERCENTAGE = 1;
+const MARKETING_BOOST_PERCENTAGE = 6;
 
 function TicketCard({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
   const router = useRouter();
