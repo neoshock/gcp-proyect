@@ -12,20 +12,34 @@ import { TicketSearchModal } from "./components/TicketSearchModal";
 import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
 import ImageCarousel from "./components/ImageCarousel";
+import { createPurchaseToken } from "./services/purchaseTokenService";
 
 const MARKETING_BOOST_PERCENTAGE = 17;
 
-function TicketCard({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
+function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
-  const handleClick = () => {
-    router.push(`/checkout?amount=${option.amount}&price=${option.price}`);
+  const handleClick = async () => {
+    try {
+      setLoading(true);
+
+      // Crear token seguro en el backend
+      const token = await createPurchaseToken(option.amount);
+
+      // Redirigir con el token
+      router.push(`/checkout?token=${token}`);
+    } catch (error) {
+      alert('Error al procesar la compra. Intenta nuevamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div
       className={`relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center ${limitedOffer ? 'border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-yellow-50' : ''
-        }`}
+        } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
       onClick={handleClick}
     >
       {/* Cinta "Más vendido" */}
@@ -60,13 +74,14 @@ function TicketCard({ option, bestSeller = false, limitedOffer = false }: { opti
         className={`text-sm font-semibold px-4 py-2 rounded transition ${limitedOffer
           ? 'bg-orange-500 text-white hover:bg-orange-600'
           : 'bg-black text-white hover:bg-gray-800'
-          }`}
+          } ${loading ? 'cursor-not-allowed' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
           handleClick();
         }}
+        disabled={loading}
       >
-        COMPRAR
+        {loading ? 'PROCESANDO...' : 'COMPRAR'}
       </button>
     </div>
   );
@@ -184,26 +199,32 @@ export default function Home() {
     );
   };
 
-  const handleCustomBuy = async () => {
-    const toalPrice = customAmount ? customAmount * raffle!.price : 0;
+  const handleCustomBuyWithToken = async () => {
+    if (!customAmount || customAmount <= 0) {
+      alert("Por favor ingresa una cantidad válida");
+      return;
+    }
 
-    if (customAmount && customAmount > 10000) {
+    if (customAmount > 10000) {
       alert("La cantidad máxima a comprar es de 10,000 números");
       return;
     }
 
-    if (toalPrice < 10) {
-      alert("La cantidad mínima a comprar es de 10$");
-      return;
-    }
-
     const remainingTickets = raffle!.total_numbers - soldTickets;
-    if (customAmount && customAmount > remainingTickets) {
+    if (customAmount > remainingTickets) {
       alert(`Solo quedan ${remainingTickets} boletos disponibles`);
       return;
     }
 
-    router.push(`/checkout?amount=${customAmount}&price=${toalPrice}`);
+    try {
+      // Crear token seguro
+      const token = await createPurchaseToken(customAmount);
+
+      // Redirigir con el token
+      router.push(`/checkout?token=${token}`);
+    } catch (error) {
+      alert('Error al procesar la compra. Intenta nuevamente.');
+    }
   };
 
 
@@ -385,7 +406,7 @@ export default function Home() {
           {ticketOptions.map((option) => {
             const isBestSeller = option.amount === 50;
             return (
-              <TicketCard
+              <TicketCardWithToken
                 key={option.amount}
                 option={option}
                 bestSeller={isBestSeller}
@@ -411,7 +432,7 @@ export default function Home() {
               onChange={(e) => setCustomAmount(parseInt(e.target.value))}
             />
             <button
-              onClick={handleCustomBuy}
+              onClick={handleCustomBuyWithToken}
               className="bg-black text-white text-sm font-semibold px-4 py-2 rounded hover:bg-gray-800"
             >
               COMPRAR
