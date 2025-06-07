@@ -308,7 +308,8 @@ function CheckoutPageContent() {
                 method: 'POST',
                 body: JSON.stringify({
                     orderNumber,
-                    token: token,
+                    amount: purchaseData.amount,
+                    price: purchaseData.price,
                     name: `${formData.name} ${formData.lastName}`,
                     email: formData.email,
                     phone: formData.phone,
