@@ -200,7 +200,9 @@ export default function Home() {
   };
 
   const handleCustomBuyWithToken = async () => {
-    if (!customAmount || customAmount <= 0) {
+
+
+    if (!customAmount || customAmount <= 0 || customAmount < 20) {
       alert("Por favor ingresa una cantidad válida");
       return;
     }
