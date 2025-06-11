@@ -73,7 +73,7 @@ export default function ReferidosPage() {
     }
 
     const copyReferralLink = async (code: string) => {
-        const link = `${window.location.origin}/${code}`
+        const link = `${window.location.origin}/?ref=${code}`
         try {
             await navigator.clipboard.writeText(link)
             toast.success('Enlace copiado al portapapeles')
@@ -126,9 +126,9 @@ export default function ReferidosPage() {
                 </div>
                 <div className="bg-white rounded-lg shadow p-6">
                     <div className="text-2xl font-bold text-green-600">
-                        {referidos.filter(r => r.is_active).length}
+                        ${referidos.reduce((sum, r) => sum + (r.total_sales || 0), 0).toFixed(2)}
                     </div>
-                    <div className="text-sm text-gray-600">Activos</div>
+                    <div className="text-sm text-gray-600">Ventas Totales</div>
                 </div>
                 <div className="bg-white rounded-lg shadow p-6">
                     <div className="text-2xl font-bold text-blue-600">

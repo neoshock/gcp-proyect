@@ -124,6 +124,7 @@ export const getReferidos = async (): Promise<Referido[]> => {
       )
     `)
         .order('created_at', { ascending: false })
+        .filter('invoices.status', 'eq', 'completed') 
 
     if (error) {
         console.error('Error al obtener referidos:', error)
