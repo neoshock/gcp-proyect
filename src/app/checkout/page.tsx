@@ -790,9 +790,9 @@ function CheckoutPageContent() {
                                     <p className="font-medium mb-2">Detalles de transferencia:</p>
                                     <p className="mb-1"><span className="font-semibold">Banco:</span> Banco Pichincha</p>
                                     <p className="mb-1"><span className="font-semibold">Tipo de cuenta:</span> Cuenta de ahorro transaccional</p>
-                                    <p className="mb-1"><span className="font-semibold">N° de cuenta:</span> 2207181692</p>
-                                    <p className="mb-1"><span className="font-semibold">Titular:</span> Stiveen Sangoquiza Pazmiño</p>
-                                    <p className="mb-1"><span className="font-semibold">RUC/CI:</span> 1720120771</p>
+                                    <p className="mb-1"><span className="font-semibold">N° de cuenta:</span> 2206048998</p>
+                                    <p className="mb-1"><span className="font-semibold">Titular:</span> Franklin Daniel Peñafiel Morales</p>
+                                    <p className="mb-1"><span className="font-semibold">RUC/CI:</span> 1722338621</p>
 
                                     <div className="mt-4 text-gray-700">
                                         <p className="font-semibold text-red-600">IMPORTANTE:</p>
