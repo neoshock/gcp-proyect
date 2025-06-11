@@ -12,7 +12,7 @@ export function BlessedNumbersSection({ blessedNumbers }: BlessedNumbersSectionP
     <section className="w-full px-4">
       <h2 className="text-2xl sm:text-4xl font-semibold italic mb-2 text-center">Números Bendecidos</h2>
       <p className="text-center ">
-        Gana 200$ si te toca un número bendecido <strong>!Estos son los 5 números ganadores de la semana!</strong>
+        Gana 200$ si te toca un número bendecido <strong>!Estos son los {blessedNumbers.length} números ganadores de la semana!</strong>
       </p>
 
       <div className="flex flex-wrap justify-center gap-4">

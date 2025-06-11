@@ -142,6 +142,22 @@ export const createInvoiceWithParticipant = async (invoiceData: Omit<InvoiceCrea
  * @returns La factura creada
  */
 export const createInvoice = async (invoiceData: InvoiceCreationData): Promise<Invoice> => {
+    let referralId: string | null = null;
+    
+    if (invoiceData.referral_code) {
+        const { data: referral, error: referralError } = await supabase
+            .from("referrals")
+            .select("id")
+            .eq("referral_code", invoiceData.referral_code.toUpperCase())
+            .single();
+
+        if (referralError) {
+            console.warn("Código de referido no encontrado:", invoiceData.referral_code);
+        } else {
+            referralId = referral.id;
+        }
+    }
+
     try {
         const newInvoice = {
             order_number: invoiceData.orderNumber,
@@ -156,8 +172,8 @@ export const createInvoice = async (invoiceData: InvoiceCreationData): Promise<I
             payment_method: invoiceData.paymentMethod,
             amount: invoiceData.amount,
             total_price: invoiceData.totalPrice,
-            participant_id: invoiceData.participantId
-            // created_at se genera automáticamente por Supabase
+            participant_id: invoiceData.participantId,
+            referral_id: referralId 
         };
 
         const { data, error } = await supabase

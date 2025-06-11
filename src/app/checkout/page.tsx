@@ -24,6 +24,7 @@ interface TokenPayload {
 function CheckoutPageContent() {
     const params = useSearchParams();
     const token = params.get('token');
+    const reffer = params.get('ref');
 
     const [isLoading, setIsLoading] = useState(true);
     const [orderNumber, setOrderNumber] = useState<string>('');
@@ -300,7 +301,8 @@ function CheckoutPageContent() {
                 city: formData.city,
                 address: formData.address,
                 amount: purchaseData.amount,
-                totalPrice: purchaseData.price
+                totalPrice: purchaseData.price,
+                referral_code: reffer || undefined
             });
 
             // Crear sesión de checkout de Stripe con el token
@@ -388,7 +390,8 @@ function CheckoutPageContent() {
                 city: formData.city,
                 address: formData.address,
                 amount: validatedData.amount,
-                totalPrice: validatedData.price
+                totalPrice: validatedData.price,
+                referral_code: reffer || undefined
             });
 
             await new Promise(resolve => setTimeout(resolve, 1000));
@@ -720,6 +723,15 @@ function CheckoutPageContent() {
                                     <span className="font-semibold">Número de pedido:</span> {orderNumber}
                                 </p>
                             </div>
+
+                            {/* Mostrar mensaje de refferer si existe */}
+                            {reffer && (
+                                <div className="mt-4 p-3 bg-blue-50 rounded-md">
+                                    <p className="text-sm text-blue-600">
+                                        <span className="font-semibold">Referido:</span> {reffer}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="bg-white p-6 rounded-md shadow border">

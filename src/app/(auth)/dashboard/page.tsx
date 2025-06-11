@@ -8,28 +8,26 @@ import { DollarSign, Hash, Trophy, PieChart } from 'lucide-react';
 import PaymentMethodGaugeMini from '../components/PaymentMethodGauge';
 
 export default function DashboardPage() {
-
     const [metrics, setMetrics] = useState<{
-        totalSales: number;
-        totalNumbersSold: number;
-        totalWinners: number;
-        conversionRate: number;
-        transferSales: number;
-        stripeSales: number;
-        transferPercentage: number;
-        stripePercentage: number;
-    } | null>(null);
-
+        totalSales: number
+        totalNumbersSold: number
+        totalWinners: number
+        conversionRate: number
+        transferSales: number
+        stripeSales: number
+        transferPercentage: number
+        stripePercentage: number
+    } | null>(null)
 
     useEffect(() => {
-        getDashboardMetrics().then(setMetrics).catch(console.error);
-    }, []);
+        getDashboardMetrics().then(setMetrics).catch(console.error)
+    }, [])
 
     return (
-        <div className="p-4">
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">Panel Administrativo</h1>
+        <div className="space-y-6">
+            {/* Metrics Cards */}
             {metrics ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <DashboardMetricCard
                         icon={<DollarSign />}
                         title="Total Ventas"
@@ -57,9 +55,18 @@ export default function DashboardPage() {
                     />
                 </div>
             ) : (
-                <p className="text-gray-500">Cargando métricas...</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="bg-white rounded-lg shadow p-6 animate-pulse">
+                            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                    ))}
+                </div>
             )}
+
+            {/* Tables */}
             <DashboardTables />
         </div>
-    );
+    )
 }

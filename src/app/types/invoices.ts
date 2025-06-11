@@ -32,6 +32,8 @@ export interface InvoiceCreationData {
     amount: number;
     totalPrice: number;
     participantId?: string;
+    referral_id?: string;
+    referral_code?: string; // Código de referido opcional
 }
 
 // Estado de pago para facturas

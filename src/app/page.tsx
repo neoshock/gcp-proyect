@@ -1,7 +1,7 @@
 'use client';
 import Image from "next/image";
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from "react";
 
 // Importamos nuestros servicios y tipos
 import { getBlessedNumbers, getSoldTicketsCount, getUserTickets } from "./services/numberService";
@@ -18,7 +18,17 @@ const MARKETING_BOOST_PERCENTAGE = 17;
 
 function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
+
+  const [referralCode, setReferralCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (typeof ref === 'string' && ref) {
+      setReferralCode(ref);
+    }
+  }, [searchParams]);
 
   const handleClick = async () => {
     try {
@@ -27,8 +37,12 @@ function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false 
       // Crear token seguro en el backend
       const token = await createPurchaseToken(option.amount);
 
-      // Redirigir con el token
-      router.push(`/checkout?token=${token}`);
+      // Redirigir incluyendo el ref si existe
+      const checkoutUrl = referralCode
+        ? `/checkout?token=${token}&ref=${encodeURIComponent(referralCode)}`
+        : `/checkout?token=${token}`;
+
+      router.push(checkoutUrl);
     } catch (error) {
       alert('Error al procesar la compra. Intenta nuevamente.');
     } finally {
@@ -94,6 +108,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [raffle, setRaffle] = useState<Raffle | null>(null);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
 
   // Estados para la consulta de tickets
   const [searchEmail, setSearchEmail] = useState("");
@@ -135,6 +150,14 @@ export default function Home() {
     ? Math.min(((soldTickets / raffle.total_numbers) * 100) + MARKETING_BOOST_PERCENTAGE, 100)
     : 0;
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (typeof ref === 'string' && ref) {
+      setReferralCode(ref);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!loading && soldPercentage > 0) {
@@ -200,8 +223,6 @@ export default function Home() {
   };
 
   const handleCustomBuyWithToken = async () => {
-
-
     if (!customAmount || customAmount <= 0 || customAmount < 20) {
       alert("Por favor ingresa una cantidad válida");
       return;
@@ -222,13 +243,15 @@ export default function Home() {
       // Crear token seguro
       const token = await createPurchaseToken(customAmount);
 
-      // Redirigir con el token
-      router.push(`/checkout?token=${token}`);
+      const checkoutUrl = referralCode
+        ? `/checkout?token=${token}&ref=${encodeURIComponent(referralCode)}`
+        : `/checkout?token=${token}`;
+
+      router.push(checkoutUrl);
     } catch (error) {
       alert('Error al procesar la compra. Intenta nuevamente.');
     }
   };
-
 
   // Función para buscar tickets por correo
   const handleSearchTickets = async (e?: React.FormEvent) => {
