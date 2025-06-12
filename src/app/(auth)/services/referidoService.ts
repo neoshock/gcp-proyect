@@ -124,7 +124,7 @@ export const getReferidos = async (): Promise<Referido[]> => {
       )
     `)
         .order('created_at', { ascending: false })
-        .filter('invoices.status', 'eq', 'completed') 
+        .filter('invoices.status', 'eq', 'completed')
 
     if (error) {
         console.error('Error al obtener referidos:', error)
@@ -164,4 +164,70 @@ export const toggleReferidoStatus = async (id: string, currentStatus: boolean) =
         .update({ is_active: !currentStatus })
         .eq('id', id)
     if (error) throw error
+}
+
+export async function getReferralStatsByUser(userId: string) {
+    const { data: referral, error: referralError } = await supabase
+        .from('referrals')
+        .select('id, commission_rate')
+        .eq('referrer_user_id', userId)
+        .single()
+
+    if (referralError || !referral) {
+        throw new Error('No se encontró referido para este usuario')
+    }
+
+    // Paso 2: Buscar todas las facturas asociadas a ese referral_id
+    const { data: invoices, error: invoiceError } = await supabase
+        .from('invoices')
+        .select('total_price, status, participant_id')
+        .eq('referral_id', referral.id)
+
+    if (invoiceError) {
+        throw new Error('Error al obtener ventas del referido')
+    }
+
+    const completed = invoices.filter(i => i.status === 'paid')
+    const pending = invoices.filter(i => i.status !== 'paid')
+
+    const totalSales = completed.reduce((sum, inv) => sum + (inv.total_price || 0), 0)
+    const totalCommission = totalSales * (referral.commission_rate ?? 0)
+    const uniqueParticipants = new Set(completed.map(i => i.participant_id))
+
+    return {
+        totalSales,
+        totalCommission,
+        totalParticipants: uniqueParticipants.size,
+        completedCount: completed.length,
+        pendingCount: pending.length
+    }
+}
+
+export async function getReferralParticipantsByUser(userId: string) {
+    const { data: referral, error: referralError } = await supabase
+        .from('referrals')
+        .select('id')
+        .eq('referrer_user_id', userId)
+        .single()
+
+    if (referralError || !referral) {
+        throw new Error('No se encontró referido para este usuario')
+    }
+
+    const { data, error } = await supabase
+        .from('invoices')
+        .select(`
+      id,
+      full_name,
+      email,
+      total_price,
+      status,
+      created_at
+    `)
+        .eq('referral_id', referral.id)
+        .order('created_at', { ascending: false })
+
+    if (error) throw new Error('Error al obtener participantes')
+
+    return data
 }

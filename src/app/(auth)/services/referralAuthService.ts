@@ -42,3 +42,27 @@ export const linkUserToReferral = async (email: string, userId: string) => {
 
     if (error) throw new Error('Error al vincular usuario al referido')
 }
+
+export const isUserReferred = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('referrals')
+        .select('id')
+        .eq('referrer_user_id', userId)
+        .maybeSingle()
+
+    if (error) throw new Error('Error validando referido')
+
+    return Boolean(data)
+}
+
+export const getReferralCode = async (userId: string) => {
+    const { data, error } = await supabase
+        .from('referrals')
+        .select('referral_code')
+        .eq('referrer_user_id', userId)
+        .maybeSingle()
+
+    if (error) throw new Error('Error obteniendo código de referido')
+
+    return data?.referral_code || null
+}

@@ -7,29 +7,44 @@ import Link from 'next/link'
 import { authService } from './services/authService'
 import { Menu } from '@headlessui/react'
 import { Toaster } from 'sonner'
-import { LayoutDashboard, Users, ChevronLeft, ChevronRight } from 'lucide-react'
-
-const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-    { name: 'Referidos', href: '/dashboard/referidos', icon: Users },
-]
+import { LayoutDashboard, Users, ChevronLeft, ChevronRight, DollarSign } from 'lucide-react'
+import { isUserReferred } from './services/referralAuthService'
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     const [userEmail, setUserEmail] = useState<string | null>(null)
     const [sidebarOpen, setSidebarOpen] = useState(true)
     const router = useRouter()
     const pathname = usePathname()
+    const [isReferred, setIsReferred] = useState<boolean | null>(null)
+    const [loading, setLoading] = useState(true) // <-- estado loading
+
+
+    const navigation = isReferred
+        ? [
+            { name: 'Mis Ventas', href: '/dashboard/mis-ventas', icon: DollarSign }
+        ]
+        : [
+            { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+            { name: 'Referidos', href: '/dashboard/referidos', icon: Users }
+        ]
 
     useEffect(() => {
         authService.getUser()
-            .then((user) => {
+            .then(async (user) => {
                 if (!user) {
                     router.push('/login')
                 } else {
                     setUserEmail(user.email ?? null)
+                    const referred = await isUserReferred(user.id)
+                    setIsReferred(referred)
+
+                    if (referred) {
+                        router.push('/dashboard/mis-ventas')
+                    }
                 }
             })
             .catch(() => router.push('/login'))
+            .finally(() => setLoading(false))  // <-- ya terminó de cargar
     }, [])
 
     const handleLogout = async () => {
@@ -41,6 +56,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         }
     }
 
+    if (loading || isReferred === null) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                Cargando...
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen flex bg-gray-100">
