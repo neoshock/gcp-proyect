@@ -13,6 +13,7 @@ import { getActiveRaffle } from "./services/raffleService";
 import { Raffle } from "./types/raffles";
 import ImageCarousel from "./components/ImageCarousel";
 import { createPurchaseToken } from "./services/purchaseTokenService";
+import { YouTubeVideoPlayer } from "./components/YouTubeVideoPlayer";
 
 const MARKETING_BOOST_PERCENTAGE = 17;
 
@@ -411,6 +412,16 @@ export default function HomeContent() {
               onClick={() => setIsVideoModalOpen(true)}>
               🎥 Ver video tutorial
             </button>
+          </div>
+
+          {/* NUEVO: Componente de video de YouTube */}
+          <div className="mt-8">
+            <YouTubeVideoPlayer
+              videoUrl="https://youtu.be/2ZmniAsyy-Q?si=kzUBofDwlYuXzIPw"
+              title="Mira todo lo que te vas a llevar por solo 0,50 ctvs"
+              description="En este video te mostramos todos los premios que puedes ganar participando en nuestro sorteo."
+              className="mb-6"
+            />
           </div>
         </section>
 
