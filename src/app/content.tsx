@@ -417,7 +417,7 @@ export default function HomeContent() {
           {/* NUEVO: Componente de video de YouTube */}
           <div className="mt-8">
             <YouTubeVideoPlayer
-              videoUrl="https://youtu.be/2ZmniAsyy-Q?si=kzUBofDwlYuXzIPw"
+              videoUrl="https://drive.google.com/file/d/1RTuNu150zp4Cbl14i75PI1RjlXf29qI1/view"
               title="Mira todo lo que te vas a llevar por solo 0,50 ctvs"
               description="En este video te mostramos todos los premios que puedes ganar participando en nuestro sorteo."
               className="mb-6"

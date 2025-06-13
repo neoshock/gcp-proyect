@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 interface YouTubeVideoPlayerProps {
-    /** URL completa del video de YouTube */
+    /** URL completa del video de Google Drive */
     videoUrl: string;
     /** Título opcional para mostrar encima del video */
     title?: string;
@@ -19,34 +19,36 @@ export const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
 }) => {
     const [hasError, setHasError] = useState(false);
 
-    // Función para extraer el ID del video de YouTube de diferentes formatos de URL
-    const getYouTubeVideoId = (url: string): string | null => {
+    // Función para extraer el ID del archivo de Google Drive y convertir a URL de embed
+    const getGoogleDriveEmbedUrl = (url: string): string | null => {
+        // Patrones para diferentes formatos de URL de Google Drive
         const patterns = [
-            /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-            /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+            /\/file\/d\/([a-zA-Z0-9-_]+)\/view/,
+            /\/file\/d\/([a-zA-Z0-9-_]+)/,
+            /id=([a-zA-Z0-9-_]+)/
         ];
 
         for (const pattern of patterns) {
             const match = url.match(pattern);
             if (match && match[1]) {
-                return match[1];
+                return `https://drive.google.com/file/d/${match[1]}/preview`;
             }
         }
         return null;
     };
 
-    const videoId = getYouTubeVideoId(videoUrl);
+    const embedUrl = getGoogleDriveEmbedUrl(videoUrl);
 
-    if (!videoId) {
+    if (!embedUrl) {
         return (
             <div className={`text-center p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}>
-                <p className="text-red-600">Error: URL de video de YouTube no válida</p>
+                <p className="text-red-600">Error: URL de Google Drive no válida</p>
+                <p className="text-sm text-gray-600 mt-2">
+                    Asegúrate de que el archivo sea público y la URL tenga el formato correcto
+                </p>
             </div>
         );
     }
-
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
 
     // Si hay error o video bloqueado, mostrar alternativa
     if (hasError) {
@@ -59,21 +61,21 @@ export const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
                 )}
 
                 <div className="relative w-full">
-                    <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-xl shadow-lg bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center">
+                    <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-xl shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
                             <div className="text-6xl mb-4">🎥</div>
                             <h4 className="text-xl font-bold mb-2">Video no disponible para reproducir aquí</h4>
                             <p className="text-sm mb-6 opacity-90">
-                                Este video tiene restricciones de derechos de autor que impiden su reproducción en sitios externos.
+                                El video puede tener restricciones de privacidad o no estar disponible para visualización externa.
                             </p>
                             <a
-                                href={watchUrl}
+                                href={videoUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="bg-white text-red-600 font-bold py-3 px-6 rounded-full hover:bg-gray-100 transition-colors shadow-lg flex items-center gap-2"
+                                className="bg-white text-blue-600 font-bold py-3 px-6 rounded-full hover:bg-gray-100 transition-colors shadow-lg flex items-center gap-2"
                             >
-                                <span>▶️</span>
-                                Ver en YouTube
+                                <span>📁</span>
+                                Ver en Google Drive
                             </a>
                         </div>
                     </div>
@@ -101,26 +103,13 @@ export const YouTubeVideoPlayer: React.FC<YouTubeVideoPlayerProps> = ({
                 <div className="relative pb-[56.25%] h-0 overflow-hidden rounded-xl shadow-lg">
                     <iframe
                         src={embedUrl}
-                        title="Video de YouTube"
+                        title="Video de Google Drive"
                         className="absolute top-0 left-0 w-full h-full"
                         frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                         onError={() => setHasError(true)}
                     />
-                </div>
-
-                {/* Botón alternativo siempre visible */}
-                <div className="text-center mt-4">
-                    <a
-                        href={watchUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-colors text-sm"
-                    >
-                        <span>▶️</span>
-                        Ver en YouTube
-                    </a>
                 </div>
             </div>
 
