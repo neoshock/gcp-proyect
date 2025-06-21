@@ -415,14 +415,6 @@ export default function HomeContent() {
           </div>
 
           {/* NUEVO: Componente de video de YouTube */}
-          <div className="mt-8">
-            <YouTubeVideoPlayer
-              videoUrl="https://drive.google.com/file/d/1RTuNu150zp4Cbl14i75PI1RjlXf29qI1/view"
-              title="Mira todo lo que te vas a llevar por solo 0,50 ctvs"
-              description="En este video te mostramos todos los premios que puedes ganar participando en nuestro sorteo."
-              className="mb-6"
-            />
-          </div>
         </section>
 
         {/* Ticket de Oferta Limitada - Destacado */}
@@ -510,18 +502,6 @@ export default function HomeContent() {
             <br />
             Si no los encuentras, revisa tu bandeja de correo no deseado o spam.
           </p>
-
-          {/* Iframe del Reel de Instagram */}
-          <div className="flex justify-center mt-6">
-            <iframe
-              src="https://www.instagram.com/reel/DJ7y7eFu908/embed"
-              width="400"
-              height="480"
-              frameBorder="0"
-              allowFullScreen
-              className="rounded-lg shadow-lg"
-            ></iframe>
-          </div>
         </section>
       </main>
 
