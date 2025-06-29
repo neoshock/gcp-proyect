@@ -15,7 +15,7 @@ import ImageCarousel from "./components/ImageCarousel";
 import { createPurchaseToken } from "./services/purchaseTokenService";
 import { YouTubeVideoPlayer } from "./components/YouTubeVideoPlayer";
 
-const MARKETING_BOOST_PERCENTAGE = 55;
+const MARKETING_BOOST_PERCENTAGE = 65;
 
 function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
   const router = useRouter();
