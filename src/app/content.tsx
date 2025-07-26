@@ -15,9 +15,9 @@ import ImageCarousel from "./components/ImageCarousel";
 import { createPurchaseToken } from "./services/purchaseTokenService";
 import { YouTubeVideoPlayer } from "./components/YouTubeVideoPlayer";
 
-const MARKETING_BOOST_PERCENTAGE = 0;
+const MARKETING_BOOST_PERCENTAGE = 3;
 
-function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean }) {
+function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false, isSoldOut = false }: { option: TicketOption, bestSeller?: boolean, limitedOffer?: boolean, isSoldOut?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -32,6 +32,8 @@ function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false 
   }, [searchParams]);
 
   const handleClick = async () => {
+    if (isSoldOut) return;
+
     try {
       setLoading(true);
 
@@ -53,19 +55,30 @@ function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false 
 
   return (
     <div
-      className={`relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center cursor-pointer flex flex-col items-center ${limitedOffer ? 'border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-yellow-50' : ''
-        } ${loading ? 'opacity-50 pointer-events-none' : ''}`}
-      onClick={handleClick}
+      className={`relative bg-gray-100 border rounded-2xl p-3 shadow hover:shadow-lg transition text-center flex flex-col items-center ${limitedOffer ? 'border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-yellow-50' : ''
+        } ${isSoldOut ? 'opacity-50 bg-gray-200 cursor-not-allowed' : 'cursor-pointer'
+        } ${loading ? 'opacity-50 pointer-events-none' : ''
+        }`}
+      onClick={!isSoldOut ? handleClick : undefined}
     >
+      {/* Overlay para sold out */}
+      {isSoldOut && (
+        <div className="absolute inset-0 bg-gray-900 bg-opacity-50 rounded-2xl flex items-center justify-center z-20">
+          <div className="bg-red-600 text-white text-lg font-bold px-4 py-2 rounded-lg shadow-lg transform rotate-12">
+            AGOTADO
+          </div>
+        </div>
+      )}
+
       {/* Cinta "Más vendido" */}
-      {bestSeller && (
+      {bestSeller && !isSoldOut && (
         <div className="absolute -top-3 -left-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-tr-lg rounded-bl-lg shadow-md z-10">
           MÁS VENDIDO
         </div>
       )}
 
       {/* Cinta "Oferta Limitada" */}
-      {limitedOffer && (
+      {limitedOffer && !isSoldOut && (
         <div className="absolute -top-3 -right-3 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-tl-lg rounded-br-lg shadow-md z-10 animate-pulse">
           OFERTA LIMITADA
         </div>
@@ -75,7 +88,7 @@ function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false 
         x{option.amount} NÚMEROS
       </h3>
 
-      {limitedOffer && (
+      {limitedOffer && !isSoldOut && (
         <div className="mb-2">
           <div className="text-xs text-orange-600 font-semibold">¡SÚPER DESCUENTO!</div>
         </div>
@@ -86,17 +99,19 @@ function TicketCardWithToken({ option, bestSeller = false, limitedOffer = false 
       </p>
 
       <button
-        className={`text-sm font-semibold px-4 py-2 rounded transition ${limitedOffer
-          ? 'bg-orange-500 text-white hover:bg-orange-600'
-          : 'bg-black text-white hover:bg-gray-800'
+        className={`text-sm font-semibold px-4 py-2 rounded transition ${isSoldOut
+            ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
+            : limitedOffer
+              ? 'bg-orange-500 text-white hover:bg-orange-600'
+              : 'bg-black text-white hover:bg-gray-800'
           } ${loading ? 'cursor-not-allowed' : ''}`}
         onClick={(e) => {
           e.stopPropagation();
-          handleClick();
+          if (!isSoldOut) handleClick();
         }}
-        disabled={loading}
+        disabled={loading || isSoldOut}
       >
-        {loading ? 'PROCESANDO...' : 'COMPRAR'}
+        {isSoldOut ? 'AGOTADO' : loading ? 'PROCESANDO...' : 'COMPRAR'}
       </button>
     </div>
   );
@@ -130,8 +145,6 @@ export default function HomeContent() {
     "/images/6.png",
   ];
 
-
-
   const baseAmounts = [20, 30, 40, 50, 75, 100];
 
   const ticketOptions: TicketOption[] = raffle
@@ -146,10 +159,14 @@ export default function HomeContent() {
     price: 5
   };
 
+  // Verificar si está sold out
+  const isSoldOut = true;
+  const remainingTickets = raffle ? raffle.total_numbers - soldTickets : 0;
 
   const soldPercentage = raffle && raffle.total_numbers > 0
     ? Math.min(((soldTickets / raffle.total_numbers) * 100) + MARKETING_BOOST_PERCENTAGE, 100)
     : 0;
+
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -213,7 +230,6 @@ export default function HomeContent() {
     loadData();
   }, []);
 
-
   // Función para actualizar un número bendecido cuando es reclamado
   const handleNumberClaimed = (updatedNumber: BlessedNumber) => {
     setBlessedNumbers(prevNumbers =>
@@ -224,6 +240,11 @@ export default function HomeContent() {
   };
 
   const handleCustomBuyWithToken = async () => {
+    if (isSoldOut) {
+      alert("Lo sentimos, todos los boletos han sido vendidos");
+      return;
+    }
+
     if (!customAmount || customAmount <= 0 || customAmount < 20) {
       alert("Por favor ingresa una cantidad válida");
       return;
@@ -234,7 +255,6 @@ export default function HomeContent() {
       return;
     }
 
-    const remainingTickets = raffle!.total_numbers - soldTickets;
     if (customAmount > remainingTickets) {
       alert(`Solo quedan ${remainingTickets} boletos disponibles`);
       return;
@@ -297,6 +317,17 @@ export default function HomeContent() {
       </header>
       <main className="flex flex-col items-center p-4 max-w-4xl mx-auto">
 
+        {/* Banner de sold out */}
+        {isSoldOut && (
+          <section className="w-full mb-6">
+            <div className="bg-red-600 text-white text-center py-4 px-6 rounded-xl shadow-lg">
+              <h2 className="text-2xl font-bold mb-2">🎉 ¡SOLD OUT! 🎉</h2>
+              <p className="text-lg">Todos los boletos han sido vendidos</p>
+              <p className="text-sm mt-2">¡Gracias por participar! El sorteo se realizará pronto.</p>
+            </div>
+          </section>
+        )}
+
         {/* Título destacado */}
         <section className="text-center mb-4">
           <h2 className="text-2xl sm:text-4xl font-bold leading-tight">
@@ -319,7 +350,11 @@ export default function HomeContent() {
 
         {/* Descripción */}
         <section className="text-center mb-6">
-          <p>Participa comprando uno o más boletos. <strong>¡Mientras más compres, más chances tienes!</strong></p>
+          {!isSoldOut ? (
+            <p>Participa comprando uno o más boletos. <strong>¡Mientras más compres, más chances tienes!</strong></p>
+          ) : (
+            <p>¡Gracias a todos los participantes! <strong>El sorteo se realizará próximamente.</strong></p>
+          )}
         </section>
 
         {/* Barra de progreso */}
@@ -330,33 +365,55 @@ export default function HomeContent() {
           </div>
           <div className="w-full bg-gray-100 rounded-full h-8 overflow-hidden shadow-inner">
             <div
-              className="bg-gradient-to-r from-green-400 to-green-600 h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out"
+              className={`h-full text-sm text-white font-medium flex items-center justify-center transition-all duration-500 ease-out ${isSoldOut
+                  ? 'bg-gradient-to-r from-red-500 to-red-600'
+                  : 'bg-gradient-to-r from-green-400 to-green-600'
+                }`}
               style={{
                 width: `${Math.max(animatedPercentage, 0.5)}%`,
-                boxShadow: '0 2px 4px rgba(0, 150, 0, 0.3)'
+                boxShadow: isSoldOut
+                  ? '0 2px 4px rgba(220, 38, 38, 0.3)'
+                  : '0 2px 4px rgba(0, 150, 0, 0.3)'
               }}
             >
+              {isSoldOut && animatedPercentage >= 90 && (
+                <span className="text-xs font-bold">¡SOLD OUT!</span>
+              )}
             </div>
           </div>
           <div className="text-xs mt-1">
-            <p className="mb-4 text-center ">
-              Cuando la barra llegue al 100% daremos por finalizado y procederemos a realizar el sorteo entre todos los participantes.
-              Se tomarán los 5 números de la primera y segunda suerte del programa <strong>LOTERIA NACIONAL</strong>.
-            </p>
+            {!isSoldOut ? (
+              <p className="mb-4 text-center ">
+                Cuando la barra llegue al 100% daremos por finalizado y procederemos a realizar el sorteo entre todos los participantes.
+                Se tomarán los 5 números de la primera y segunda suerte del programa <strong>LOTERIA NACIONAL</strong>.
+              </p>
+            ) : (
+              <p className="mb-4 text-center font-semibold text-red-600">
+                ¡Venta finalizada! Se procederá a realizar el sorteo entre todos los participantes.
+                Se tomarán los 5 números de la primera y segunda suerte del programa <strong>LOTERIA NACIONAL</strong>.
+              </p>
+            )}
           </div>
 
+          {/* Información de tickets restantes */}
+          {!isSoldOut && remainingTickets <= 100 && remainingTickets > 0 && (
+            <div className="text-center mt-2">
+              <span className="bg-orange-100 text-orange-800 text-sm font-semibold px-3 py-1 rounded-full">
+                ⚡ ¡Solo quedan {remainingTickets} boletos disponibles!
+              </span>
+            </div>
+          )}
 
           {/* Valores de depuración durante desarrollo */}
           {process.env.NODE_ENV === 'development' && (
             <div className="text-xs text-gray-500 mt-1">
               Debug: Vendidos: {soldTickets}, Total: {raffle?.total_numbers},
               Porcentaje real: {soldPercentage.toFixed(2)}%,
-              Animado: {animatedPercentage.toFixed(2)}%
+              Animado: {animatedPercentage.toFixed(2)}%,
+              Sold Out: {isSoldOut ? 'Sí' : 'No'}
             </div>
           )}
         </section>
-
-
 
         {/* Sección de números bendecidos */}
         {loading ? (
@@ -387,86 +444,94 @@ export default function HomeContent() {
             onNumberClaimed={handleNumberClaimed}
           />
         )}
+
         {/* Información adicional */}
         <section className="w-full mb-8 text-gray-800 mt-3">
           <h3 className="text-xl font-semibold mb-2 text-center">¿Cómo puedo hacer para participar?</h3>
-          <p className="mb-2">Es muy sencillo, te lo explico en estos cuatro pasos ⤵️</p>
-          <ol className="list-decimal list-inside space-y-2 pl-4 text-xs marker:font-bold">
-            <li>
-              Selecciona el paquete de números que desees, es súper fácil. Recuerda que mientras más números tengas,
-              más oportunidades tendrás de ganar.
-            </li>
-            <li>
-              Serás redirigido a una página donde seleccionas tu forma de pago y llenarás tus datos.
-            </li>
-            <li>
-              Una vez realizado el pago, automáticamente y de manera aleatoria se asignarán tus números, los mismos que serán enviados
-              al correo electrónico registrado con la compra (revisa también tu bandeja de correo no deseado o spam).
-            </li>
-            <li>
-              Podrás revisarlos también en la parte de abajo en el apartado <strong>«Consulta tus números»</strong>.
-            </li>
-          </ol>
+          {!isSoldOut ? (
+            <>
+              <p className="mb-2">Es muy sencillo, te lo explico en estos cuatro pasos ⤵️</p>
+              <ol className="list-decimal list-inside space-y-2 pl-4 text-xs marker:font-bold">
+                <li>
+                  Selecciona el paquete de números que desees, es súper fácil. Recuerda que mientras más números tengas,
+                  más oportunidades tendrás de ganar.
+                </li>
+                <li>
+                  Serás redirigido a una página donde seleccionas tu forma de pago y llenarás tus datos.
+                </li>
+                <li>
+                  Una vez realizado el pago, automáticamente y de manera aleatoria se asignarán tus números, los mismos que serán enviados
+                  al correo electrónico registrado con la compra (revisa también tu bandeja de correo no deseado o spam).
+                </li>
+                <li>
+                  Podrás revisarlos también en la parte de abajo en el apartado <strong>«Consulta tus números»</strong>.
+                </li>
+              </ol>
+            </>
+          ) : (
+            <p className="mb-2 text-center">
+              La venta de boletos ha finalizado. ¡Gracias a todos los participantes!
+              Mantente atento para conocer la fecha del sorteo.
+            </p>
+          )}
+
           <div className="mt-6 flex justify-center">
             <button className="bg-emerald-700 text-white px-6 py-3 rounded-xl text-sm font-semibold hover:bg-gray-800 transition"
               onClick={() => setIsVideoModalOpen(true)}>
               🎥 Ver video tutorial
             </button>
           </div>
-
-          {/* NUEVO: Componente de video de YouTube */}
         </section>
 
-        {/* Ticket de Oferta Limitada - Destacado */}
-        {/* <section className="w-full mb-6">
-          <div className="flex justify-center">
-            <div className="w-full max-w-sm">
-              <TicketCard
-                option={limitedOfferOption}
-                limitedOffer={true}
+        {/* Opciones de tickets - Solo mostrar si no está sold out */}
+        {!isSoldOut && (
+          <section className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
+            {ticketOptions.map((option) => {
+              const isBestSeller = option.amount === 50;
+              const isOptionSoldOut = option.amount > remainingTickets;
+              return (
+                <TicketCardWithToken
+                  key={option.amount}
+                  option={option}
+                  bestSeller={isBestSeller}
+                  isSoldOut={isOptionSoldOut}
+                />
+              );
+            })}
+          </section>
+        )}
+
+        {/* Card personalizada para ingresar cantidad - Solo mostrar si no está sold out */}
+        {!isSoldOut && (
+          <section className="w-full mt-6">
+            <div className="bg-gray-100 border rounded-2xl p-6 shadow hover:shadow-lg transition text-center flex flex-col items-center">
+              <h3 className="text-xl font-bold tracking-wide mb-4">¿Deseas más números?</h3>
+              <label className="mb-2 text-sm text-gray-700" htmlFor="customAmount">
+                Ingresa la cantidad de boletos que deseas comprar:
+              </label>
+              <input
+                id="customAmount"
+                type="number"
+                min={1}
+                max={remainingTickets}
+                placeholder="Ej. 250"
+                className="w-32 text-center px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+                value={customAmount ?? ""}
+                onChange={(e) => setCustomAmount(parseInt(e.target.value))}
               />
+              <p className="text-xs text-gray-600 mb-2">
+                Quedan {remainingTickets} boletos disponibles
+              </p>
+              <button
+                onClick={handleCustomBuyWithToken}
+                className="bg-black text-white text-sm font-semibold px-4 py-2 rounded hover:bg-gray-800"
+                disabled={isSoldOut}
+              >
+                COMPRAR
+              </button>
             </div>
-          </div>
-        </section> */}
-
-        {/* Opciones de tickets */}
-        <section className="grid grid-cols-2 sm:grid-cols-3 gap-4 w-full">
-          {ticketOptions.map((option) => {
-            const isBestSeller = option.amount === 50;
-            return (
-              <TicketCardWithToken
-                key={option.amount}
-                option={option}
-                bestSeller={isBestSeller}
-              />
-            );
-          })}
-        </section>
-
-        {/* Card personalizada para ingresar cantidad */}
-        <section className="w-full mt-6">
-          <div className="bg-gray-100 border rounded-2xl p-6 shadow hover:shadow-lg transition text-center flex flex-col items-center">
-            <h3 className="text-xl font-bold tracking-wide mb-4">¿Deseas más números?</h3>
-            <label className="mb-2 text-sm text-gray-700" htmlFor="customAmount">
-              Ingresa la cantidad de boletos que deseas comprar:
-            </label>
-            <input
-              id="customAmount"
-              type="number"
-              min={1}
-              placeholder="Ej. 250"
-              className="w-32 text-center px-4 py-2 mb-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              value={customAmount ?? ""}
-              onChange={(e) => setCustomAmount(parseInt(e.target.value))}
-            />
-            <button
-              onClick={handleCustomBuyWithToken}
-              className="bg-black text-white text-sm font-semibold px-4 py-2 rounded hover:bg-gray-800"
-            >
-              COMPRAR
-            </button>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* Consulta tus números */}
         <section className="w-full mt-8">
